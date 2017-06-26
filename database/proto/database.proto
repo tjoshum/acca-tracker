@@ -1,8 +1,13 @@
 syntax = "proto3";
 
+// You shouldn't expect changes here to have any effect on the build.
+// I've checked in the generated .pb.go file to remove the dependency on
+// micro's own version of protoc-gen-go. It can be regenerated with:
+// protoc -I=. --go_out=plugins=micro:. *.proto
+// on a suitably configured system.
+
 service DatabaseService {
     rpc AddGame(AddGameRequest) returns (AddGameResponse);
-//    rpc AddBet(AddBetRequest)   returns (AddBetResponse);
 }
 
 enum ErrorCode {
@@ -54,5 +59,5 @@ message AddGameRequest {
 
 message AddGameResponse {
     ErrorCode error = 1;
-    string uuid = 2;
+    int32 gameId = 2;
 }
