@@ -1,0 +1,20 @@
+version: '2'
+services:
+  consul:
+    image: "consul:latest"
+    network_mode: "bridge"
+    ports:
+        - "8500:8500"
+        - "8400:8400"
+        - "${DOCKER_ADDRESS}:53:8600/udp"
+    command: ["agent","-bootstrap","-server","-client","0.0.0.0"]
+  database:
+    build:
+      context: $GOPATH/src/github.com/tjoshum/acca-tracker/database
+    depends_on:
+      - "consul"
+    network_mode: "bridge"
+    volumes:
+      - $GOPATH:/opt/dev/go # Just to allow us to quickly develop for now.
+    environment:
+      - GOPATH=/opt/dev/go

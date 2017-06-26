@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+service DatabaseService {
+    rpc AddGame(AddGameRequest) returns (AddGameResponse);
+//    rpc AddBet(AddBetRequest)   returns (AddBetResponse);
+}
+
+enum ErrorCode {
+    SUCCESS = 0;
+    NOT_FOUND = 1;
+}
+
+// Beware! Changing these will require a re-install of the system.
+enum TeamCode {
+  Buffalo=0;
+  Cleveland=1;
+  NewOrleans=2;
+  NewEngland=3;
+  Detroit=4;
+  GreenBay=5;
+  Seattle=6;
+  Baltimore=7;
+  Miami=8;
+  Minnesota=9;
+  Cincinnati=10;
+  Philadelphia=11;
+  Pittsburgh=12;
+  Chicago=13;
+  Indianapolis=14;
+  NYGiants=15;
+  Jacksonville=16;
+  StLouis=17;
+  KansasCity=18;
+  Tennessee=19;
+  Carolina=20;
+  Arizona=21;
+  Denver=22;
+  Dallas=23;
+  Houston=24;
+  SanFrancisco=25;
+  SanDiego=26;
+  Oakland=27;
+  NYJets=28;
+  Washington=29;
+  TampaBay=30;
+  Atlanta=31;
+}
+
+message AddGameRequest {
+    int32 week = 1;
+    TeamCode home_team = 2;
+    TeamCode away_team = 3;
+}
+
+message AddGameResponse {
+    ErrorCode error = 1;
+    string uuid = 2;
+}
