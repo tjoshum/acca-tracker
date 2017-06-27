@@ -15,4 +15,8 @@ if [ $? -ne "0" ]; then
   exit 1
 fi
 
-docker-compose up -d --build database
+if [ -z $DOCKER_ADDRESS ]; then
+  export DOCKER_ADDRESS="localhost"
+fi
+
+docker-compose up -d --build database gamed

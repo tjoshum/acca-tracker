@@ -1,5 +1,9 @@
 package main
 
+/*
+ * A service for controlling the database.
+ */
+
 import (
 	"database/sql"
 	"fmt"
@@ -9,39 +13,38 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	micro "github.com/micro/go-micro"
+	"github.com/tjoshum/acca-tracker/database/constants"
+	"github.com/tjoshum/acca-tracker/database/handlers"
+	"github.com/tjoshum/acca-tracker/database/proto"
 	"github.com/tjoshum/acca-tracker/lib/names"
 )
 
-/*
-A daemon for populating and maintaining a database of games.
-*/
-
-const databaseDriver = "mysql"
-const serverString = "root:your_password@tcp(127.0.0.1:3306)/"
-const databaseName = "accatrackerdb"
-const gameTableName = "games"
-const betTableName = "bets"
-
 var createTablesStatements = []string{
-	`CREATE DATABASE IF NOT EXISTS ` + databaseName,
-	`USE ` + databaseName,
-	`CREATE TABLE IF NOT EXISTS ` + gameTableName + ` (
+	`CREATE DATABASE IF NOT EXISTS ` + constants.DatabaseName,
+	`USE ` + constants.DatabaseName,
+	`CREATE TABLE IF NOT EXISTS ` + constants.GameTableName + ` (
 		id INT UNSIGNED NOT NULL AUTO_INCREMENT,
 		week INT UNSIGNED NOT NULL,
-		homeTeam INT UNSIGNED NOT NULL,
-		awayTeam INT UNSIGNED NOT NULL,
+		homeTeam varchar(255),
+		awayTeam varchar(255),
 		PRIMARY KEY (id)
 	)`,
-	`CREATE TABLE IF NOT EXISTS ` + betTableName + ` (
+	`CREATE TABLE IF NOT EXISTS ` + constants.UserTableName + ` (
+		id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+		name varchar(255),
+		PRIMARY KEY (id)
+	)`,
+	`CREATE TABLE IF NOT EXISTS ` + constants.BetTableName + ` (
 		id INT UNSIGNED NOT NULL AUTO_INCREMENT,
 		gameId INT UNSIGNED NOT NULL,
+		userId INT UNSIGNED NOT NULL,
 		PRIMARY KEY (id)
 	)`,
 }
 
 func main() {
 	// Initialise the database
-	db_root, err := sql.Open(databaseDriver, serverString)
+	db_root, err := sql.Open(constants.DatabaseDriver, constants.ServerString)
 	if err != nil {
 		log.Fatal("Server open", err)
 	}
@@ -51,13 +54,8 @@ func main() {
 		log.Fatal("Ping", err)
 	}
 
-	_, err = db_root.Exec("CREATE DATABASE IF NOT EXISTS " + databaseName + ";")
-	if err != nil {
-		log.Fatal("Database create", err)
-	}
-
 	for _, stmt := range createTablesStatements {
-		_, err := db_root.Exec(stmt + ";")
+		_, err := db_root.Exec(stmt)
 		if err != nil {
 			log.Fatal("Database/table create", err)
 		}
@@ -70,10 +68,12 @@ func main() {
 		micro.RegisterInterval(time.Second*10),
 		micro.Version("latest"),
 		micro.Metadata(map[string]string{
-			"description": "Acca-tracker service to manage access to the databse.",
+			"description": "Acca-tracker service to manage access to the database.",
 		}),
 	)
 	service.Init()
+
+	database.RegisterDatabaseServiceHandler(service.Server(), new(handlers.DatabaseHandler))
 
 	if err := service.Run(); err != nil {
 		fmt.Println(err)

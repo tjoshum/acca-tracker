@@ -18,3 +18,15 @@ services:
       - $GOPATH:/opt/dev/go # Just to allow us to quickly develop for now.
     environment:
       - GOPATH=/opt/dev/go
+      - REGISTRY_ADDRESS=$DOCKER_ADDRESS
+  gamed:
+    build:
+      context: $GOPATH/src/github.com/tjoshum/acca-tracker/gamed
+    depends_on:
+      - "consul"
+    network_mode: "bridge"
+    volumes:
+      - $GOPATH:/opt/dev/go # Just to allow us to quickly develop for now.
+    environment:
+      - GOPATH=/opt/dev/go
+      - REGISTRY_ADDRESS=$DOCKER_ADDRESS
