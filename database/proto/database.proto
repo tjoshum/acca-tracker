@@ -8,6 +8,10 @@ syntax = "proto3";
 
 service DatabaseService {
     rpc AddGame(AddGameRequest) returns (AddGameResponse);
+    rpc AddBet (AddBetRequest)  returns (AddBetResponse);
+    rpc AddUser(AddUserRequest) returns (AddUserResponse);
+    rpc GetGameBets(GetGameBetsRequest) returns (GetGameBetsResponse);
+    rpc GetWeekGames(GetWeekGamesRequest) returns (GetWeekGamesResponse);
 }
 
 enum ErrorCode {
@@ -17,7 +21,7 @@ enum ErrorCode {
 
 // Beware! Changing these will require a re-install of the system.
 enum TeamCode {
-  Buffalo=0;
+  NotATeam=0;
   Cleveland=1;
   NewOrleans=2;
   NewEngland=3;
@@ -49,15 +53,69 @@ enum TeamCode {
   Washington=29;
   TampaBay=30;
   Atlanta=31;
+  Buffalo=32;
 }
 
 message AddGameRequest {
     int32 week = 1;
-    TeamCode home_team = 2;
-    TeamCode away_team = 3;
+    TeamCode homeTeam = 2;
+    TeamCode awayTeam = 3;
 }
 
 message AddGameResponse {
     ErrorCode error = 1;
     int32 gameId = 2;
+}
+
+// Get the games occuring in a week
+message GetWeekGamesRequest {
+    int32 week = 1;
+}
+
+message GetWeekGamesResponse {
+    ErrorCode error = 1;
+
+    message Game {
+        int32 gameId = 1;
+        TeamCode homeTeam = 2;
+        TeamCode awayTeam = 3;
+    }
+    repeated Game games = 2;
+}
+
+message AddBetRequest {
+    int32 gameId = 1;
+    int32 winner = 2;
+    sint32 spread = 3;
+    string username = 4;
+}
+
+message AddBetResponse {
+    ErrorCode error = 1;
+    int32 betId = 2;
+}
+
+// Get the bets for a game
+message GetGameBetsRequest {
+    int32 gameId = 1;
+}
+
+message GetGameBetsResponse {
+    ErrorCode error = 1;
+
+    message Bet {
+        int32 betId = 1;
+        int32 winner = 2;
+        sint32 spread = 3;
+        string username = 4;
+    }
+    repeated Bet bets = 2;
+}
+
+message AddUserRequest {
+    string username = 1;
+}
+
+message AddUserResponse {
+    ErrorCode error = 1;
 }
