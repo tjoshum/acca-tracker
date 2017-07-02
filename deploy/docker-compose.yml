@@ -30,3 +30,16 @@ services:
     environment:
       - GOPATH=/opt/dev/go
       - REGISTRY_ADDRESS=$DOCKER_ADDRESS
+  webd:
+    build:
+      context: $GOPATH/src/github.com/tjoshum/acca-tracker/webd
+    depends_on:
+      - "consul"
+    network_mode: "bridge"
+    ports:
+      - "80:80"
+    volumes:
+      - $GOPATH:/opt/dev/go # Just to allow us to quickly develop for now.
+    environment:
+      - GOPATH=/opt/dev/go
+      - REGISTRY_ADDRESS=$DOCKER_ADDRESS
