@@ -10,14 +10,53 @@ import (
 	"net/http"
 )
 
-type Header struct {
+type UsernameList []string
+type BetString string
+type GameString string
+type UsersBetsForAGame map[string]BetString
+type MyTable map[GameString]UsersBetsForAGame //games -> {users -> bets}
+
+func GetUsers() UsernameList {
+	return []string{"tom", "sam"}
+}
+
+func GetBetsForWeekUser(week int, user string) UsersBetsForAGame {
+	gamebets := make(map[string]BetString)
+	if user == "tom" {
+		gamebets["CIN 2 v 3 BAL"] = "BAL (+1)"
+	} else {
+		gamebets["CIN 2 v 3 BAL"] = "BAL (+3)"
+	}
+	return gamebets
+}
+
+func create_strings(week int) MyTable {
+	users := GetUsers()
+
+	display_table := make(map[GameString]UsersBetsForAGame)
+	for _, username := range users {
+		gamebets := GetBetsForWeekUser(1, username)
+		for game, bets := range gamebets {
+			if display_table[GameString(game)] == nil {
+				display_table[GameString(game)] = make(UsersBetsForAGame)
+			}
+			display_table[GameString(game)][username] = bets
+		}
+	}
+
+	return display_table
+}
+
+// Data to be passed in to the header html template
+type HeaderData struct {
 	Title string
 	Week  string
 }
 
+// Data to be passed in to the row html template
 type RowData struct {
-	Headline    string
-	Predictions []string
+	Headline    GameString
+	Predictions []BetString
 }
 
 func renderTemplate(w http.ResponseWriter, tmpl string, d interface{}) {
@@ -32,21 +71,34 @@ func renderTemplate(w http.ResponseWriter, tmpl string, d interface{}) {
 }
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
-	d := &Header{
+	localTable := create_strings(1)
+
+	d := &HeaderData{
 		Title: "NFL Betting Results",
 		Week:  "1",
 	}
 	renderTemplate(w, "head", d)
 
-	users := []string{"User1", "User2"}
+	var users []string
+	for _, ub := range localTable {
+		for user := range ub {
+			users = append(users, user)
+		}
+		break
+	}
 	renderTemplate(w, "table_headings", users)
 
-	pr := []string{"CHI (+2)", "CIN (-5)"}
-	rd := &RowData{
-		Headline:    "CHI 12 - 16 CIN",
-		Predictions: pr,
+	for g, ub := range localTable {
+		var bets []BetString
+		for _, abet := range ub {
+			bets = append(bets, abet)
+		}
+		rd := &RowData{
+			Headline:    g,
+			Predictions: bets,
+		}
+		renderTemplate(w, "row", rd)
 	}
-	renderTemplate(w, "row", rd)
 
 	renderTemplate(w, "foot", "")
 }
