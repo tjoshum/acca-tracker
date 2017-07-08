@@ -10,7 +10,8 @@ service DatabaseService {
     rpc AddGame(AddGameRequest) returns (AddGameResponse);
     rpc AddBet (AddBetRequest)  returns (AddBetResponse);
     rpc AddUser(AddUserRequest) returns (AddUserResponse);
-    rpc GetGameBets(GetGameBetsRequest) returns (GetGameBetsResponse);
+    rpc GetUserList (GetUserListRequest) returns (GetUserListResponse);
+    rpc GetUserBets (GetUserBetsRequest) returns (GetUserBetsResponse);
     rpc GetWeekGames(GetWeekGamesRequest) returns (GetWeekGamesResponse);
 }
 
@@ -95,12 +96,28 @@ message AddBetResponse {
     int32 betId = 2;
 }
 
-// Get the bets for a game
-message GetGameBetsRequest {
-    int32 gameId = 1;
+message AddUserRequest {
+    string username = 1;
 }
 
-message GetGameBetsResponse {
+message AddUserResponse {
+    ErrorCode error = 1;
+}
+
+message GetUserListRequest {
+}
+
+message GetUserListResponse {
+    ErrorCode error = 1;
+    repeated string users = 2;
+}
+
+message GetUserBetsRequest {
+    int32 week = 1;
+    string user = 2;
+}
+
+message GetUserBetsResponse {
     ErrorCode error = 1;
 
     message Bet {
@@ -110,12 +127,4 @@ message GetGameBetsResponse {
         string username = 4;
     }
     repeated Bet bets = 2;
-}
-
-message AddUserRequest {
-    string username = 1;
-}
-
-message AddUserResponse {
-    ErrorCode error = 1;
 }

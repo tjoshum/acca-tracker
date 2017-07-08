@@ -64,6 +64,23 @@ func (s *DatabaseHandler) AddBet(ctx context.Context, req *database.AddBetReques
 }
 
 func (s *DatabaseHandler) AddUser(ctx context.Context, req *database.AddUserRequest, rsp *database.AddUserResponse) error {
+	db, err := GetDatabase()
+	if err != nil {
+		log.Println("Error: GetDatabase", err)
+		return nil
+	}
+	defer db.Close()
+
+	str := fmt.Sprintf(
+		"INSERT INTO %s (name) VALUES(\"%s\")",
+		constants.UserTableName,
+		req.Username)
+	log.Println("Attempting SQL '" + str + "'...")
+	_, err = db.Exec(str)
+	if err != nil {
+		log.Println("Error: Table entry", err)
+		return err
+	}
 	return nil
 }
 
@@ -71,6 +88,7 @@ func stringToTeamCode(str string) database.TeamCode {
 	return database.TeamCode(database.TeamCode_value[str])
 }
 
+// TODO Is this still used?
 func (s *DatabaseHandler) GetWeekGames(ctx context.Context, req *database.GetWeekGamesRequest, rsp *database.GetWeekGamesResponse) error {
 	db, err := GetDatabase()
 	if err != nil {
@@ -112,6 +130,35 @@ func (s *DatabaseHandler) GetWeekGames(ctx context.Context, req *database.GetWee
 	return nil
 }
 
-func (s *DatabaseHandler) GetGameBets(ctx context.Context, req *database.GetGameBetsRequest, rsp *database.GetGameBetsResponse) error {
+func (s *DatabaseHandler) GetUserBets(ctx context.Context, req *database.GetUserBetsRequest, rsp *database.GetUserBetsResponse) error {
+	return nil
+}
+
+func (s *DatabaseHandler) GetUserList(ctx context.Context, req *database.GetUserListRequest, rsp *database.GetUserListResponse) error {
+	db, err := GetDatabase()
+	if err != nil {
+		log.Println("Error: GetDatabase", err)
+		return nil
+	}
+	defer db.Close()
+
+	str := fmt.Sprintf(
+		"SELECT name FROM %s",
+		constants.UserTableName,
+	)
+	rows, err := db.Query(str)
+	if err != nil {
+		log.Println("Error: Table entry", err)
+		return err
+	}
+
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			log.Fatal(err)
+		}
+		rsp.Users = append(rsp.Users, name)
+	}
+
 	return nil
 }
