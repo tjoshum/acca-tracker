@@ -38,9 +38,10 @@ func TestGames(t *testing.T) {
 	}
 }
 
+const user1 = "alice"
+const user2 = "bob"
+
 func TestUsers(t *testing.T) {
-	user1 := "alice"
-	user2 := "bob"
 	d := new(handlers.DatabaseHandler)
 
 	add_req := &database.AddUserRequest{
@@ -88,5 +89,35 @@ func TestUsers(t *testing.T) {
 	}
 	if !found_user2 {
 		t.Errorf("Failed to find user2")
+	}
+}
+
+// Must run after TestGames and TestUsers, so that we have populated games and users tables.
+func TestBets(t *testing.T) {
+	d := new(handlers.DatabaseHandler)
+
+	add_req := &database.AddBetRequest{
+		GameId:   1,
+		BetOn:    database.TeamCode_Carolina,
+		Spread:   -2,
+		Username: user1,
+	}
+	add_rsp := &database.AddBetResponse{}
+	d.AddBet(context.TODO(), add_req, add_rsp)
+
+	get_req := &database.GetUserBetsRequest{
+		Week: 1,
+		User: user1,
+	}
+	get_rsp := &database.GetUserBetsResponse{}
+
+	d.GetUserBets(context.TODO(), get_req, get_rsp)
+	for _, bet := range get_rsp.GetBets() {
+		if bet.BetOn != database.TeamCode_Carolina {
+			t.Errorf("Unexpected team. Got %s expected %s.", bet.BetOn, database.TeamCode_Carolina)
+		}
+		if bet.Spread != -2 {
+			t.Errorf("Unexpected user. Got %d expected %d.", bet.Spread, -2)
+		}
 	}
 }

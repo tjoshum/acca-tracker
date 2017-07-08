@@ -38,6 +38,8 @@ var createTablesStatements = []string{
 		id INT UNSIGNED NOT NULL AUTO_INCREMENT,
 		gameId INT UNSIGNED NOT NULL,
 		userId INT UNSIGNED NOT NULL,
+		betOn varchar(255),
+		spread INT NOT NULL,
 		PRIMARY KEY (id)
 	)`,
 }

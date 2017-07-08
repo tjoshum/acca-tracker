@@ -86,7 +86,7 @@ message GetWeekGamesResponse {
 
 message AddBetRequest {
     int32 gameId = 1;
-    int32 winner = 2;
+    TeamCode betOn = 2;
     sint32 spread = 3;
     string username = 4;
 }
@@ -122,9 +122,8 @@ message GetUserBetsResponse {
 
     message Bet {
         int32 betId = 1;
-        int32 winner = 2;
+        TeamCode betOn = 2;
         sint32 spread = 3;
-        string username = 4;
     }
     repeated Bet bets = 2;
 }
