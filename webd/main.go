@@ -5,42 +5,87 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"html/template"
 	"net/http"
+
+	"github.com/micro/go-micro/client"
+	"github.com/micro/go-micro/cmd"
+	"github.com/micro/go-micro/metadata"
+	"github.com/prometheus/common/log"
+	"github.com/tjoshum/acca-tracker/database/proto"
+	"github.com/tjoshum/acca-tracker/lib/names"
 )
 
-type UsernameList []string
+// Type safety, to stop me from getting mixed up.
+type Username string
+type UserMap map[int32]Username
 type BetString string
 type GameString string
-type UsersBetsForAGame map[string]BetString
-type MyTable map[GameString]UsersBetsForAGame //games -> {users -> bets}
+type BetsOnAGame map[Username]BetString
+type MyTable map[GameString]BetsOnAGame //games -> {users -> bets}
 
-func GetUsers() UsernameList {
-	return []string{"tom", "sam"}
-}
-
-func GetBetsForWeekUser(week int, user string) UsersBetsForAGame {
-	gamebets := make(map[string]BetString)
-	if user == "tom" {
-		gamebets["CIN 2 v 3 BAL"] = "BAL (+1)"
-	} else {
-		gamebets["CIN 2 v 3 BAL"] = "BAL (+3)"
+func GetUserMapping(cl database.DatabaseServiceClient, ctx context.Context) UserMap {
+	rsp, err := cl.GetUserList(ctx, &database.GetUserListRequest{})
+	if err != nil {
+		log.Fatal("Error getting user list", err)
 	}
-	return gamebets
+	ret := make(UserMap)
+	for _, user := range rsp.GetUsers() {
+		ret[user.GetUserId()] = Username(user.GetUsername())
+	}
+	return ret
 }
 
-func create_strings(week int) MyTable {
-	users := GetUsers()
+func GetGames(cl database.DatabaseServiceClient, ctx context.Context, weekNum int32) []*database.GetWeekGamesResponse_Game {
+	rsp, err := cl.GetWeekGames(ctx, &database.GetWeekGamesRequest{
+		Week: weekNum,
+	})
+	if err != nil {
+		log.Fatal("Error getting games for week", weekNum, err)
+	}
+	return rsp.GetGames()
+}
 
-	display_table := make(map[GameString]UsersBetsForAGame)
-	for _, username := range users {
-		gamebets := GetBetsForWeekUser(1, username)
-		for game, bets := range gamebets {
-			if display_table[GameString(game)] == nil {
-				display_table[GameString(game)] = make(UsersBetsForAGame)
+func GetBetsOnGame(cl database.DatabaseServiceClient, ctx context.Context, gameId int32) []*database.GetBetsOnGameResponse_Bet {
+	rsp, err := cl.GetBetsOnGame(ctx, &database.GetBetsOnGameRequest{
+		GameId: gameId,
+	})
+	if err != nil {
+		log.Fatal("Error getting bets for game", gameId, err)
+	}
+	return rsp.GetBets()
+}
+
+func create_strings(week int32) MyTable {
+	// TODO Share between requests.
+	cl := database.NewDatabaseServiceClient(names.DatabaseSvc, client.DefaultClient)
+	ctx := metadata.NewContext(context.Background(), map[string]string{
+		"X-User-Id": "noone1235",
+		"X-From-Id": "some-client",
+	})
+
+	userMap := GetUserMapping(cl, ctx)
+	games := GetGames(cl, ctx, week)
+
+	display_table := make(MyTable)
+	for _, a_game := range games {
+		bets_on_this_game := GetBetsOnGame(cl, ctx, a_game.GameId)
+		for _, bet := range bets_on_this_game {
+			game_str := GameString(fmt.Sprintf(
+				"%s %d - %d %s",
+				a_game.GetAwayTeam(), a_game.GetAwayScore(),
+				a_game.GetHomeScore(), a_game.GetHomeTeam()))
+			if display_table[game_str] == nil {
+				display_table[game_str] = make(BetsOnAGame)
 			}
-			display_table[GameString(game)][username] = bets
+			user_str := userMap[bet.GetUserId()]
+			bet_str := BetString(fmt.Sprintf(
+				"%s (%d)",
+				bet.GetBetOn(),
+				bet.GetSpread()))
+			display_table[game_str][user_str] = bet_str
 		}
 	}
 
@@ -79,7 +124,8 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	renderTemplate(w, "head", d)
 
-	var users []string
+	// TODO De-duplicate
+	var users []Username // Users who have placed bets this week.
 	for _, ub := range localTable {
 		for user := range ub {
 			users = append(users, user)
@@ -104,6 +150,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	cmd.Init()
 	http.HandleFunc("/", viewHandler)
 	http.ListenAndServe(":80", nil)
 }

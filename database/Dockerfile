@@ -16,4 +16,4 @@ RUN ["/bin/bash", "-c", "debconf-set-selections <<< 'mysql-server mysql-server/r
 RUN go get github.com/go-sql-driver/mysql
 
 #CMD service mysql start; while true; do sleep 600; done
-CMD service mysql start; go run $GOPATH/src/github.com/tjoshum/acca-tracker/database/main.go --registry_address $REGISTRY_ADDRESS
+CMD $GOPATH/src/github.com/tjoshum/acca-tracker/database/run.sh

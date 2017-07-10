@@ -13,6 +13,7 @@ service DatabaseService {
     rpc GetUserList (GetUserListRequest) returns (GetUserListResponse);
     rpc GetUserBets (GetUserBetsRequest) returns (GetUserBetsResponse);
     rpc GetWeekGames(GetWeekGamesRequest) returns (GetWeekGamesResponse);
+    rpc GetBetsOnGame(GetBetsOnGameRequest) returns (GetBetsOnGameResponse);
 }
 
 enum ErrorCode {
@@ -61,6 +62,9 @@ message AddGameRequest {
     int32 week = 1;
     TeamCode homeTeam = 2;
     TeamCode awayTeam = 3;
+    int32 homeScore = 4;
+    int32 awayScore = 5;
+    bool final = 6;
 }
 
 message AddGameResponse {
@@ -80,6 +84,9 @@ message GetWeekGamesResponse {
         int32 gameId = 1;
         TeamCode homeTeam = 2;
         TeamCode awayTeam = 3;
+        int32 homeScore = 4;
+        int32 awayScore = 5;
+        bool final = 6;
     }
     repeated Game games = 2;
 }
@@ -109,9 +116,30 @@ message GetUserListRequest {
 
 message GetUserListResponse {
     ErrorCode error = 1;
-    repeated string users = 2;
+    message User {
+        int32 userId = 1;
+        string username = 2;
+    }
+    repeated User users = 2;
 }
 
+message GetBetsOnGameRequest {
+    int32 gameId = 1;
+}
+
+message GetBetsOnGameResponse {
+    ErrorCode error = 1;
+    message Bet {
+        int32 betId = 1;
+        int32 gameId = 2;
+        int32 userId = 3;
+        TeamCode betOn = 4;
+        sint32 spread = 5;
+    }
+    repeated Bet bets = 2;
+}
+
+// TODO Remove
 message GetUserBetsRequest {
     int32 week = 1;
     string user = 2;

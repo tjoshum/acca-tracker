@@ -65,11 +65,14 @@ func (s *DatabaseHandler) AddGame(ctx context.Context, req *database.AddGameRequ
 	defer db.Close()
 
 	str := fmt.Sprintf(
-		"INSERT INTO %s (week, homeTeam, awayTeam) VALUES(%d,\"%s\",\"%s\")",
+		"INSERT INTO %s (week, homeTeam, awayTeam, homeScore, awayScore, final) VALUES(%d,\"%s\",\"%s\",%d,%d,%d)",
 		constants.GameTableName,
 		req.Week,
 		req.HomeTeam,
-		req.AwayTeam)
+		req.AwayTeam,
+		req.HomeScore,
+		req.AwayScore,
+		0) // TODO Take from request - bool to int somehow.
 	log.Println("Attempting SQL '" + str + "'...")
 	_, err = db.Exec(str)
 	if err != nil {
@@ -130,7 +133,6 @@ func (s *DatabaseHandler) AddUser(ctx context.Context, req *database.AddUserRequ
 	return nil
 }
 
-// TODO Is this still used?
 func (s *DatabaseHandler) GetWeekGames(ctx context.Context, req *database.GetWeekGamesRequest, rsp *database.GetWeekGamesResponse) error {
 	db, err := GetDatabase()
 	if err != nil {
@@ -152,12 +154,15 @@ func (s *DatabaseHandler) GetWeekGames(ctx context.Context, req *database.GetWee
 
 	for rows.Next() {
 		var (
-			gameId   int32
-			week     int32
-			homeTeam string
-			awayTeam string
+			gameId    int32
+			week      int32
+			homeTeam  string
+			awayTeam  string
+			homeScore int32
+			awayScore int32
+			final     bool
 		)
-		if err := rows.Scan(&gameId, &week, &homeTeam, &awayTeam); err != nil {
+		if err := rows.Scan(&gameId, &week, &homeTeam, &awayTeam, &homeScore, &awayScore, &final); err != nil {
 			log.Fatal(err)
 		}
 		println("Game", gameId, "week", week, "home team", homeTeam, "away team", awayTeam)
@@ -166,6 +171,9 @@ func (s *DatabaseHandler) GetWeekGames(ctx context.Context, req *database.GetWee
 			gameId,
 			stringToTeamCode(homeTeam),
 			stringToTeamCode(awayTeam),
+			homeScore,
+			awayScore,
+			final,
 		})
 	}
 
@@ -213,6 +221,48 @@ func (s *DatabaseHandler) GetUserBets(ctx context.Context, req *database.GetUser
 	return nil
 }
 
+func (s *DatabaseHandler) GetBetsOnGame(ctx context.Context, req *database.GetBetsOnGameRequest, rsp *database.GetBetsOnGameResponse) error {
+	db, err := GetDatabase()
+	if err != nil {
+		log.Println("Error: GetDatabase", err)
+		return nil
+	}
+	defer db.Close()
+
+	bet_qstr := fmt.Sprintf(
+		"SELECT * FROM %s where gameId = %d",
+		constants.BetTableName,
+		req.GetGameId(),
+	)
+	bet_rows, err := db.Query(bet_qstr)
+	if err != nil {
+		log.Println("Error: Get bets", err)
+		return err
+	}
+	for bet_rows.Next() {
+		var (
+			betID      int32
+			gameId     int32
+			scanUserId int32
+			betOn      string
+			spread     int32
+		)
+		if err := bet_rows.Scan(&betID, &gameId, &scanUserId, &betOn, &spread); err != nil {
+			log.Fatal(err)
+		}
+
+		rsp.Bets = append(rsp.Bets, &database.GetBetsOnGameResponse_Bet{
+			betID,
+			gameId,
+			scanUserId,
+			stringToTeamCode(betOn), // TODO
+			spread,
+		})
+	}
+
+	return nil
+}
+
 func (s *DatabaseHandler) GetUserList(ctx context.Context, req *database.GetUserListRequest, rsp *database.GetUserListResponse) error {
 	db, err := GetDatabase()
 	if err != nil {
@@ -222,7 +272,7 @@ func (s *DatabaseHandler) GetUserList(ctx context.Context, req *database.GetUser
 	defer db.Close()
 
 	str := fmt.Sprintf(
-		"SELECT name FROM %s",
+		"SELECT * FROM %s",
 		constants.UserTableName,
 	)
 	rows, err := db.Query(str)
@@ -232,11 +282,15 @@ func (s *DatabaseHandler) GetUserList(ctx context.Context, req *database.GetUser
 	}
 
 	for rows.Next() {
-		var name string
-		if err := rows.Scan(&name); err != nil {
+		var userId int32
+		var username string
+		if err := rows.Scan(&userId, &username); err != nil {
 			log.Fatal(err)
 		}
-		rsp.Users = append(rsp.Users, name)
+		rsp.Users = append(rsp.Users, &database.GetUserListResponse_User{
+			userId,
+			username,
+		})
 	}
 
 	return nil

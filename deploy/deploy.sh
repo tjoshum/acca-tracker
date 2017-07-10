@@ -2,6 +2,8 @@
 
 cd $(dirname "${BASH_SOURCE[0]}")
 
+./teardown.sh
+
 # Check pre-requisites.
 docker --version
 if [ $? -ne "0" ]; then

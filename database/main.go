@@ -27,6 +27,9 @@ var createTablesStatements = []string{
 		week INT UNSIGNED NOT NULL,
 		homeTeam varchar(255),
 		awayTeam varchar(255),
+		homeScore INT UNSIGNED,
+		awayScore INT UNSIGNED,
+		final bool,
 		PRIMARY KEY (id)
 	)`,
 	`CREATE TABLE IF NOT EXISTS ` + constants.UserTableName + ` (

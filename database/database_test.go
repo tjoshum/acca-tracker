@@ -15,9 +15,12 @@ func TestGames(t *testing.T) {
 	awayTeam := database.TeamCode_Baltimore
 
 	add_req := &database.AddGameRequest{
-		Week:     1,
-		HomeTeam: homeTeam,
-		AwayTeam: awayTeam,
+		Week:      1,
+		HomeTeam:  homeTeam,
+		AwayTeam:  awayTeam,
+		HomeScore: 0,
+		AwayScore: 0,
+		Final:     false,
 	}
 	add_rsp := &database.AddGameResponse{}
 	d.AddGame(context.TODO(), add_req, add_rsp)
@@ -57,7 +60,7 @@ func TestUsers(t *testing.T) {
 		t.Errorf("Too many users returned. Got %d expected %d.", len(get_rsp1.GetUsers()), 1)
 	}
 	for _, user := range get_rsp1.GetUsers() {
-		if user != user1 {
+		if user.GetUsername() != user1 {
 			t.Errorf("Unexpected user. Got %s expected %s.", user1, user)
 		}
 	}
@@ -76,9 +79,9 @@ func TestUsers(t *testing.T) {
 	found_user1 := false
 	found_user2 := false
 	for _, user := range get_rsp2.GetUsers() {
-		if user == user1 {
+		if user.GetUsername() == user1 {
 			found_user1 = true
-		} else if user == user2 {
+		} else if user.GetUsername() == user2 {
 			found_user2 = true
 		} else {
 			t.Errorf("Found unexpected user: %s", user)
