@@ -45,6 +45,7 @@ func GetGames(cl database.DatabaseServiceClient, ctx context.Context, weekNum in
 	if err != nil {
 		log.Fatal("Error getting games for week", weekNum, err)
 	}
+	fmt.Println("DEBUG webd GetGames: size", len(rsp.GetGames()))
 	return rsp.GetGames()
 }
 
@@ -68,23 +69,25 @@ func create_strings(week int32) MyTable {
 
 	userMap := GetUserMapping(cl, ctx)
 	games := GetGames(cl, ctx, week)
-
+	fmt.Println("DEBUG webd Game size", len(games))
 	display_table := make(MyTable)
 	for _, a_game := range games {
+		game_str := GameString(fmt.Sprintf(
+			"%s %d - %d %s",
+			a_game.GetAwayTeam(), a_game.GetAwayScore(),
+			a_game.GetHomeScore(), a_game.GetHomeTeam()))
+		if display_table[game_str] == nil {
+			display_table[game_str] = make(BetsOnAGame)
+		}
+		fmt.Println("DEBUG webd Going round game loop", game_str)
 		bets_on_this_game := GetBetsOnGame(cl, ctx, a_game.GameId)
 		for _, bet := range bets_on_this_game {
-			game_str := GameString(fmt.Sprintf(
-				"%s %d - %d %s",
-				a_game.GetAwayTeam(), a_game.GetAwayScore(),
-				a_game.GetHomeScore(), a_game.GetHomeTeam()))
-			if display_table[game_str] == nil {
-				display_table[game_str] = make(BetsOnAGame)
-			}
 			user_str := userMap[bet.GetUserId()]
 			bet_str := BetString(fmt.Sprintf(
 				"%s (%d)",
 				bet.GetBetOn(),
 				bet.GetSpread()))
+			fmt.Println("DEBUG webd Pushing ", game_str, "user:", user_str, "bet:", bet_str)
 			display_table[game_str][user_str] = bet_str
 		}
 	}
@@ -134,13 +137,15 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	renderTemplate(w, "table_headings", users)
 
-	for g, ub := range localTable {
+	for gameStr, userBetStrMap := range localTable {
+		fmt.Println("DEBUG LogAGame", gameStr)
 		var bets []BetString
-		for _, abet := range ub {
+		for _, abet := range userBetStrMap {
 			bets = append(bets, abet)
+			fmt.Println("LogABet", abet)
 		}
 		rd := &RowData{
-			Headline:    g,
+			Headline:    gameStr,
 			Predictions: bets,
 		}
 		renderTemplate(w, "row", rd)

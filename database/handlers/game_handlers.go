@@ -165,7 +165,7 @@ func (s *DatabaseHandler) GetWeekGames(ctx context.Context, req *database.GetWee
 		if err := rows.Scan(&gameId, &week, &homeTeam, &awayTeam, &homeScore, &awayScore, &final); err != nil {
 			log.Fatal(err)
 		}
-		println("Game", gameId, "week", week, "home team", homeTeam, "away team", awayTeam)
+		fmt.Println("DEBUG GetWeekGames: Game", gameId, "week", week, "home team", homeTeam, "away team", awayTeam)
 
 		rsp.Games = append(rsp.Games, &database.GetWeekGamesResponse_Game{
 			gameId,

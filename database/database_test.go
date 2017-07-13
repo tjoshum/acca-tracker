@@ -8,6 +8,9 @@ import (
 	"golang.org/x/net/context"
 )
 
+const user1 = "alice"
+const user2 = "bob"
+
 func TestGames(t *testing.T) {
 	d := new(handlers.DatabaseHandler)
 
@@ -39,10 +42,15 @@ func TestGames(t *testing.T) {
 			t.Errorf("Unexpected home team. Got %s expected %s.", game.HomeTeam, homeTeam)
 		}
 	}
-}
 
-const user1 = "alice"
-const user2 = "bob"
+	// Just to populate the database a bit more:
+	add_req.HomeTeam = database.TeamCode_GreenBay
+	add_req.AwayTeam = database.TeamCode_Buffalo
+	err := d.AddGame(context.TODO(), add_req, add_rsp)
+	if err != nil {
+		t.Error("Get error on second game add", err)
+	}
+}
 
 func TestUsers(t *testing.T) {
 	d := new(handlers.DatabaseHandler)
@@ -123,4 +131,25 @@ func TestBets(t *testing.T) {
 			t.Errorf("Unexpected user. Got %d expected %d.", bet.Spread, -2)
 		}
 	}
+
+	// Just to populate the database a bit more:
+	add_req.Username = user2
+	add_req.BetOn = database.TeamCode_Baltimore
+	err := d.AddBet(context.TODO(), add_req, add_rsp)
+	if err != nil {
+		t.Error("Get error on second bet add", err)
+	}
+	add_req.GameId = 2
+	add_req.BetOn = database.TeamCode_Buffalo
+	err = d.AddBet(context.TODO(), add_req, add_rsp)
+	if err != nil {
+		t.Error("Get error on third bet add", err)
+	}
+	add_req.Username = user1
+	add_req.BetOn = database.TeamCode_GreenBay
+	err = d.AddBet(context.TODO(), add_req, add_rsp)
+	if err != nil {
+		t.Error("Get error on forth bet add", err)
+	}
+
 }
