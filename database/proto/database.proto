@@ -64,7 +64,8 @@ message AddGameRequest {
     TeamCode awayTeam = 3;
     int32 homeScore = 4;
     int32 awayScore = 5;
-    bool final = 6;
+    bool active = 6;
+    bool final = 7;
 }
 
 message AddGameResponse {
@@ -86,7 +87,8 @@ message GetWeekGamesResponse {
         TeamCode awayTeam = 3;
         int32 homeScore = 4;
         int32 awayScore = 5;
-        bool final = 6;
+        bool active = 6;
+        bool final = 7;
     }
     repeated Game games = 2;
 }

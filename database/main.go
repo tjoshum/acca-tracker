@@ -29,6 +29,7 @@ var createTablesStatements = []string{
 		awayTeam varchar(255),
 		homeScore INT UNSIGNED,
 		awayScore INT UNSIGNED,
+		active bool,
 		final bool,
 		PRIMARY KEY (id)
 	)`,

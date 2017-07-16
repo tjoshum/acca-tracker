@@ -23,6 +23,7 @@ func TestGames(t *testing.T) {
 		AwayTeam:  awayTeam,
 		HomeScore: 0,
 		AwayScore: 0,
+		Active:    true,
 		Final:     false,
 	}
 	add_rsp := &database.AddGameResponse{}
@@ -140,6 +141,7 @@ func TestBets(t *testing.T) {
 		t.Error("Get error on second bet add", err)
 	}
 	add_req.GameId = 2
+	add_req.Spread = 1
 	add_req.BetOn = database.TeamCode_Buffalo
 	err = d.AddBet(context.TODO(), add_req, add_rsp)
 	if err != nil {

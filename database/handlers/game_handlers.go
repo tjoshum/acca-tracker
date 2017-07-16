@@ -56,6 +56,14 @@ func stringToTeamCode(str string) database.TeamCode {
 	return database.TeamCode(database.TeamCode_value[str])
 }
 
+func toInt(b bool) int {
+	if b {
+		return 1
+	} else {
+		return 0
+	}
+}
+
 func (s *DatabaseHandler) AddGame(ctx context.Context, req *database.AddGameRequest, rsp *database.AddGameResponse) error {
 	db, err := GetDatabase()
 	if err != nil {
@@ -65,14 +73,15 @@ func (s *DatabaseHandler) AddGame(ctx context.Context, req *database.AddGameRequ
 	defer db.Close()
 
 	str := fmt.Sprintf(
-		"INSERT INTO %s (week, homeTeam, awayTeam, homeScore, awayScore, final) VALUES(%d,\"%s\",\"%s\",%d,%d,%d)",
+		"INSERT INTO %s (week, homeTeam, awayTeam, homeScore, awayScore, active, final) VALUES(%d,\"%s\",\"%s\",%d,%d,%d,%d)",
 		constants.GameTableName,
 		req.Week,
 		req.HomeTeam,
 		req.AwayTeam,
 		req.HomeScore,
 		req.AwayScore,
-		0) // TODO Take from request - bool to int somehow.
+		toInt(req.Active),
+		toInt(req.Final))
 	log.Println("Attempting SQL '" + str + "'...")
 	_, err = db.Exec(str)
 	if err != nil {
@@ -160,9 +169,10 @@ func (s *DatabaseHandler) GetWeekGames(ctx context.Context, req *database.GetWee
 			awayTeam  string
 			homeScore int32
 			awayScore int32
+			active    bool
 			final     bool
 		)
-		if err := rows.Scan(&gameId, &week, &homeTeam, &awayTeam, &homeScore, &awayScore, &final); err != nil {
+		if err := rows.Scan(&gameId, &week, &homeTeam, &awayTeam, &homeScore, &awayScore, &active, &final); err != nil {
 			log.Fatal(err)
 		}
 		fmt.Println("DEBUG GetWeekGames: Game", gameId, "week", week, "home team", homeTeam, "away team", awayTeam)
@@ -173,6 +183,7 @@ func (s *DatabaseHandler) GetWeekGames(ctx context.Context, req *database.GetWee
 			stringToTeamCode(awayTeam),
 			homeScore,
 			awayScore,
+			active,
 			final,
 		})
 	}

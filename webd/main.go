@@ -1,7 +1,3 @@
-// Copyright 2010 The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 package main
 
 import (
@@ -18,12 +14,17 @@ import (
 	"github.com/tjoshum/acca-tracker/lib/names"
 )
 
+type displayBets struct {
+	BetOn  database.TeamCode
+	Spread int32
+	Class  string
+}
+
 // Type safety, to stop me from getting mixed up.
 type Username string
 type UserMap map[int32]Username
-type BetString string
-type BetsOnAGame map[Username]BetString
-type MyTable map[database.GetWeekGamesResponse_Game]BetsOnAGame //games -> {users -> bets}
+type BetsOnAGame map[Username]displayBets
+type MyTable map[database.GetWeekGamesResponse_Game]BetsOnAGame // games -> {users -> bets}
 
 func GetUserMapping(cl database.DatabaseServiceClient, ctx context.Context) UserMap {
 	rsp, err := cl.GetUserList(ctx, &database.GetUserListRequest{})
@@ -58,7 +59,27 @@ func GetBetsOnGame(cl database.DatabaseServiceClient, ctx context.Context, gameI
 	return rsp.GetBets()
 }
 
-func create_strings(week int32) MyTable {
+func GetClassString(game database.GetWeekGamesResponse_Game, bet *database.GetBetsOnGameResponse_Bet) string {
+	if game.GetActive() {
+		if bet.GetBetOn() == game.GetHomeTeam() {
+			if (game.HomeScore + bet.Spread) > game.AwayScore {
+				return "winning"
+			} else {
+				return "losing"
+			}
+		} else { // Bet on the away team
+			if (game.AwayScore + bet.Spread) > game.HomeScore {
+				return "winning"
+			} else {
+				return "losing"
+			}
+		}
+	} else {
+		return "notstarted"
+	}
+}
+
+func createTable(week int32) MyTable {
 	// TODO Share between requests.
 	cl := database.NewDatabaseServiceClient(names.DatabaseSvc, client.DefaultClient)
 	ctx := metadata.NewContext(context.Background(), map[string]string{
@@ -79,12 +100,9 @@ func create_strings(week int32) MyTable {
 		bets_on_this_game := GetBetsOnGame(cl, ctx, a_game.GameId)
 		for _, bet := range bets_on_this_game {
 			user_str := userMap[bet.GetUserId()]
-			bet_str := BetString(fmt.Sprintf(
-				"%s (%d)",
-				bet.GetBetOn(),
-				bet.GetSpread()))
-			fmt.Println("DEBUG webd Pushing ", game, "user:", user_str, "bet:", bet_str)
-			display_table[game][user_str] = bet_str
+
+			fmt.Println("DEBUG webd Pushing ", game, "user:", user_str, "bet:", bet.GetBetOn(), bet.GetSpread())
+			display_table[game][user_str] = displayBets{bet.GetBetOn(), bet.GetSpread(), GetClassString(game, bet)}
 		}
 	}
 
@@ -101,7 +119,7 @@ type HeaderData struct {
 type RowData struct {
 	Game        database.GetWeekGamesResponse_Game
 	RowColour   string
-	Predictions []BetString
+	Predictions []displayBets
 }
 
 func renderTemplate(w http.ResponseWriter, tmpl string, d interface{}) {
@@ -124,7 +142,7 @@ func getRowColour(rownum int) string {
 }
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
-	localTable := create_strings(1)
+	localTable := createTable(1)
 
 	d := &HeaderData{
 		Title: "NFL Betting Results",
@@ -145,7 +163,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	rownum := 0
 	for game, userBetStrMap := range localTable {
 		fmt.Println("DEBUG LogAGame", game)
-		var bets []BetString
+		var bets []displayBets
 		for _, abet := range userBetStrMap {
 			bets = append(bets, abet)
 			fmt.Println("LogABet", abet)
