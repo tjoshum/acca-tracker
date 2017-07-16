@@ -39,7 +39,7 @@ func TestGames(t *testing.T) {
 			t.Errorf("Unexpected home team. Got %s expected %s.", game.HomeTeam, homeTeam)
 		}
 		if game.AwayTeam != awayTeam {
-			t.Errorf("Unexpected home team. Got %s expected %s.", game.HomeTeam, homeTeam)
+			t.Errorf("Unexpected away team. Got %s expected %s.", game.AwayTeam, awayTeam)
 		}
 	}
 

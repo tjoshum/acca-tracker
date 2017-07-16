@@ -1,7 +1,11 @@
-<tr>
-    <td>{{ .Headline }}</td>
+<tr bgcolor="{{ .RowColour }}">
+    <td class="hometeam">{{ .Game.HomeTeam }}</td>
+    <td>{{ .Game.HomeScore }}</td>
+    <td>-</td>
+    <td>{{ .Game.AwayScore }}</td>
+    <td class="awayteam">{{ .Game.AwayTeam }}</td>
     <td>&nbsp</td>
     {{range .Predictions}}
-    <td>{{.}}</td>
+    <td class="notstarted">{{.}}</td>
     <td></td>{{end}}
 </tr>

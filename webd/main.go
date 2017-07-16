@@ -22,9 +22,8 @@ import (
 type Username string
 type UserMap map[int32]Username
 type BetString string
-type GameString string
 type BetsOnAGame map[Username]BetString
-type MyTable map[GameString]BetsOnAGame //games -> {users -> bets}
+type MyTable map[database.GetWeekGamesResponse_Game]BetsOnAGame //games -> {users -> bets}
 
 func GetUserMapping(cl database.DatabaseServiceClient, ctx context.Context) UserMap {
 	rsp, err := cl.GetUserList(ctx, &database.GetUserListRequest{})
@@ -72,14 +71,11 @@ func create_strings(week int32) MyTable {
 	fmt.Println("DEBUG webd Game size", len(games))
 	display_table := make(MyTable)
 	for _, a_game := range games {
-		game_str := GameString(fmt.Sprintf(
-			"%s %d - %d %s",
-			a_game.GetAwayTeam(), a_game.GetAwayScore(),
-			a_game.GetHomeScore(), a_game.GetHomeTeam()))
-		if display_table[game_str] == nil {
-			display_table[game_str] = make(BetsOnAGame)
+		game := *a_game
+		if display_table[game] == nil {
+			display_table[game] = make(BetsOnAGame)
 		}
-		fmt.Println("DEBUG webd Going round game loop", game_str)
+		fmt.Println("DEBUG webd Going round game loop", game)
 		bets_on_this_game := GetBetsOnGame(cl, ctx, a_game.GameId)
 		for _, bet := range bets_on_this_game {
 			user_str := userMap[bet.GetUserId()]
@@ -87,8 +83,8 @@ func create_strings(week int32) MyTable {
 				"%s (%d)",
 				bet.GetBetOn(),
 				bet.GetSpread()))
-			fmt.Println("DEBUG webd Pushing ", game_str, "user:", user_str, "bet:", bet_str)
-			display_table[game_str][user_str] = bet_str
+			fmt.Println("DEBUG webd Pushing ", game, "user:", user_str, "bet:", bet_str)
+			display_table[game][user_str] = bet_str
 		}
 	}
 
@@ -103,7 +99,8 @@ type HeaderData struct {
 
 // Data to be passed in to the row html template
 type RowData struct {
-	Headline    GameString
+	Game        database.GetWeekGamesResponse_Game
+	RowColour   string
 	Predictions []BetString
 }
 
@@ -115,6 +112,14 @@ func renderTemplate(w http.ResponseWriter, tmpl string, d interface{}) {
 	err = t.Execute(w, d)
 	if err != nil {
 		fmt.Println("Error renderTemplate Execute: ", err.Error())
+	}
+}
+
+func getRowColour(rownum int) string {
+	if rownum%2 == 0 {
+		return "#D3D3D3"
+	} else {
+		return "#FFFFFF"
 	}
 }
 
@@ -137,18 +142,21 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	renderTemplate(w, "table_headings", users)
 
-	for gameStr, userBetStrMap := range localTable {
-		fmt.Println("DEBUG LogAGame", gameStr)
+	rownum := 0
+	for game, userBetStrMap := range localTable {
+		fmt.Println("DEBUG LogAGame", game)
 		var bets []BetString
 		for _, abet := range userBetStrMap {
 			bets = append(bets, abet)
 			fmt.Println("LogABet", abet)
 		}
 		rd := &RowData{
-			Headline:    gameStr,
+			Game:        game,
+			RowColour:   getRowColour(rownum),
 			Predictions: bets,
 		}
 		renderTemplate(w, "row", rd)
+		rownum++
 	}
 
 	renderTemplate(w, "foot", "")
