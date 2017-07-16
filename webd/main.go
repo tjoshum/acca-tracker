@@ -15,9 +15,8 @@ import (
 )
 
 type displayBets struct {
-	BetOn  database.TeamCode
-	Spread int32
-	Class  string
+	DisplayString string
+	Class         string
 }
 
 // Type safety, to stop me from getting mixed up.
@@ -100,9 +99,9 @@ func createTable(week int32) MyTable {
 		bets_on_this_game := GetBetsOnGame(cl, ctx, a_game.GameId)
 		for _, bet := range bets_on_this_game {
 			user_str := userMap[bet.GetUserId()]
-
 			fmt.Println("DEBUG webd Pushing ", game, "user:", user_str, "bet:", bet.GetBetOn(), bet.GetSpread())
-			display_table[game][user_str] = displayBets{bet.GetBetOn(), bet.GetSpread(), GetClassString(game, bet)}
+			displayString := fmt.Sprintf("%s (%d)", bet.BetOn, bet.Spread)
+			display_table[game][user_str] = displayBets{displayString, GetClassString(game, bet)}
 		}
 	}
 
@@ -150,24 +149,35 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	renderTemplate(w, "head", d)
 
-	// TODO De-duplicate
-	var users []Username // Users who have placed bets this week.
-	for _, ub := range localTable {
-		for user := range ub {
-			users = append(users, user)
+	var users []Username // De-duplicated list of users who have placed bets this week.
+	workspace := make(map[Username]struct{})
+	for _, ubmap := range localTable {
+		for user, _ := range ubmap {
+			workspace[user] = struct{}{}
 		}
-		break
+	}
+	for user, _ := range workspace {
+		fmt.Println("DEBUG Adding user to ordered list", user)
+		users = append(users, user)
 	}
 	renderTemplate(w, "table_headings", users)
 
 	rownum := 0
-	for game, userBetStrMap := range localTable {
+	for game, userToBetMap := range localTable {
 		fmt.Println("DEBUG LogAGame", game)
 		var bets []displayBets
-		for _, abet := range userBetStrMap {
-			bets = append(bets, abet)
-			fmt.Println("LogABet", abet)
+
+		for _, user := range users {
+			bet, present := userToBetMap[user]
+			if present {
+				fmt.Println("DEBUG LogBet Present", user)
+				bets = append(bets, bet)
+			} else {
+				fmt.Println("DEBUG LogBet NotPresent", user)
+				bets = append(bets, displayBets{"", "notstarted"})
+			}
 		}
+
 		rd := &RowData{
 			Game:        game,
 			RowColour:   getRowColour(rownum),

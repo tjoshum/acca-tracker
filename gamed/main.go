@@ -21,7 +21,7 @@ func main() {
 	})
 
 	rsp, err := cl.AddGame(ctx, &database.AddGameRequest{
-		Week:     2,
+		Week:     1,
 		HomeTeam: 8,
 		AwayTeam: 4,
 	})
