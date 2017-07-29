@@ -40,7 +40,7 @@ enum TeamCode {
   Indianapolis=14;
   NYGiants=15;
   Jacksonville=16;
-  StLouis=17;
+  LosAngeles=17;
   KansasCity=18;
   Tennessee=19;
   Carolina=20;

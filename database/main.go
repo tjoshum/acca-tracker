@@ -27,8 +27,8 @@ var createTablesStatements = []string{
 		week INT UNSIGNED NOT NULL,
 		homeTeam varchar(255),
 		awayTeam varchar(255),
-		homeScore INT UNSIGNED,
-		awayScore INT UNSIGNED,
+		homeScore INT,
+		awayScore INT,
 		active bool,
 		final bool,
 		PRIMARY KEY (id)
