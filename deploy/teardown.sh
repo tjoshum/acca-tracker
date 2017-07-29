@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
 IMAGES=$(docker ps -aq)
-docker stop $IMAGES
-docker rm $IMAGES
+if [[ ! -z $IMAGES ]]; then
+  docker stop $IMAGES
+  docker rm $IMAGES
+fi

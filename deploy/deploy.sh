@@ -2,8 +2,6 @@
 
 cd $(dirname "${BASH_SOURCE[0]}")
 
-./teardown.sh
-
 # Check pre-requisites.
 docker --version
 if [ $? -ne "0" ]; then
@@ -21,6 +19,9 @@ if [ -z $DOCKER_ADDRESS ]; then
   # Assume we're running on linux, rather than a docker machine.
   export DOCKER_ADDRESS=$(ifconfig docker0 | sed -n -e 's/.*inet addr:\([0-9]*\.*[0-9]*\.[0-9]\.[0-9]\).*/\1/p')
 fi
+
+# For dev, cleanup any old containers.
+./teardown.sh
 
 docker-compose up -d --build database gamed webd
 

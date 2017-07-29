@@ -1,6 +1,6 @@
 # Acca Tracker
 
-[![CircleCI](https://circleci.com/gh/tjoshum/acca-tracker/tree/master.svg?style=svg)](https://circleci.com/gh/tjoshum/acca-tracker/tree/master)
+CircleCI Status: [![CircleCI](https://circleci.com/gh/tjoshum/acca-tracker/tree/master.svg?style=svg)](https://circleci.com/gh/tjoshum/acca-tracker/tree/master)
 
 ## Prerequisites
 - Docker
