@@ -27,6 +27,11 @@ fi
 
 docker-compose up -d --build database gamed webd
 
+
+docker ps
+docker logs deploy_database_1
+
+
 # Quick and dirty hack to get something interesting into the database for me to look at.
 sleep 5
 docker exec -it deploy_database_1 bash -c "cd /opt/dev/go/src/github.com/tjoshum/acca-tracker/database; go test"
