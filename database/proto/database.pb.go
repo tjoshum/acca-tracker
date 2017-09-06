@@ -8,8 +8,8 @@ It is generated from these files:
 	database.proto
 
 It has these top-level messages:
-	AddGameRequest
-	AddGameResponse
+	UpdateGameRequest
+	UpdateGameResponse
 	GetWeekGamesRequest
 	GetWeekGamesResponse
 	AddBetRequest
@@ -182,7 +182,7 @@ func (x TeamCode) String() string {
 }
 func (TeamCode) EnumDescriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
 
-type AddGameRequest struct {
+type UpdateGameRequest struct {
 	Week      int32    `protobuf:"varint,1,opt,name=week" json:"week,omitempty"`
 	HomeTeam  TeamCode `protobuf:"varint,2,opt,name=homeTeam,enum=TeamCode" json:"homeTeam,omitempty"`
 	AwayTeam  TeamCode `protobuf:"varint,3,opt,name=awayTeam,enum=TeamCode" json:"awayTeam,omitempty"`
@@ -192,78 +192,78 @@ type AddGameRequest struct {
 	Final     bool     `protobuf:"varint,7,opt,name=final" json:"final,omitempty"`
 }
 
-func (m *AddGameRequest) Reset()                    { *m = AddGameRequest{} }
-func (m *AddGameRequest) String() string            { return proto.CompactTextString(m) }
-func (*AddGameRequest) ProtoMessage()               {}
-func (*AddGameRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
+func (m *UpdateGameRequest) Reset()                    { *m = UpdateGameRequest{} }
+func (m *UpdateGameRequest) String() string            { return proto.CompactTextString(m) }
+func (*UpdateGameRequest) ProtoMessage()               {}
+func (*UpdateGameRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
 
-func (m *AddGameRequest) GetWeek() int32 {
+func (m *UpdateGameRequest) GetWeek() int32 {
 	if m != nil {
 		return m.Week
 	}
 	return 0
 }
 
-func (m *AddGameRequest) GetHomeTeam() TeamCode {
+func (m *UpdateGameRequest) GetHomeTeam() TeamCode {
 	if m != nil {
 		return m.HomeTeam
 	}
 	return TeamCode_NotATeam
 }
 
-func (m *AddGameRequest) GetAwayTeam() TeamCode {
+func (m *UpdateGameRequest) GetAwayTeam() TeamCode {
 	if m != nil {
 		return m.AwayTeam
 	}
 	return TeamCode_NotATeam
 }
 
-func (m *AddGameRequest) GetHomeScore() int32 {
+func (m *UpdateGameRequest) GetHomeScore() int32 {
 	if m != nil {
 		return m.HomeScore
 	}
 	return 0
 }
 
-func (m *AddGameRequest) GetAwayScore() int32 {
+func (m *UpdateGameRequest) GetAwayScore() int32 {
 	if m != nil {
 		return m.AwayScore
 	}
 	return 0
 }
 
-func (m *AddGameRequest) GetActive() bool {
+func (m *UpdateGameRequest) GetActive() bool {
 	if m != nil {
 		return m.Active
 	}
 	return false
 }
 
-func (m *AddGameRequest) GetFinal() bool {
+func (m *UpdateGameRequest) GetFinal() bool {
 	if m != nil {
 		return m.Final
 	}
 	return false
 }
 
-type AddGameResponse struct {
+type UpdateGameResponse struct {
 	Error  ErrorCode `protobuf:"varint,1,opt,name=error,enum=ErrorCode" json:"error,omitempty"`
 	GameId int32     `protobuf:"varint,2,opt,name=gameId" json:"gameId,omitempty"`
 }
 
-func (m *AddGameResponse) Reset()                    { *m = AddGameResponse{} }
-func (m *AddGameResponse) String() string            { return proto.CompactTextString(m) }
-func (*AddGameResponse) ProtoMessage()               {}
-func (*AddGameResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
+func (m *UpdateGameResponse) Reset()                    { *m = UpdateGameResponse{} }
+func (m *UpdateGameResponse) String() string            { return proto.CompactTextString(m) }
+func (*UpdateGameResponse) ProtoMessage()               {}
+func (*UpdateGameResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
 
-func (m *AddGameResponse) GetError() ErrorCode {
+func (m *UpdateGameResponse) GetError() ErrorCode {
 	if m != nil {
 		return m.Error
 	}
 	return ErrorCode_SUCCESS
 }
 
-func (m *AddGameResponse) GetGameId() int32 {
+func (m *UpdateGameResponse) GetGameId() int32 {
 	if m != nil {
 		return m.GameId
 	}
@@ -697,8 +697,8 @@ func (m *GetUserBetsResponse_Bet) GetSpread() int32 {
 }
 
 func init() {
-	proto.RegisterType((*AddGameRequest)(nil), "AddGameRequest")
-	proto.RegisterType((*AddGameResponse)(nil), "AddGameResponse")
+	proto.RegisterType((*UpdateGameRequest)(nil), "UpdateGameRequest")
+	proto.RegisterType((*UpdateGameResponse)(nil), "UpdateGameResponse")
 	proto.RegisterType((*GetWeekGamesRequest)(nil), "GetWeekGamesRequest")
 	proto.RegisterType((*GetWeekGamesResponse)(nil), "GetWeekGamesResponse")
 	proto.RegisterType((*GetWeekGamesResponse_Game)(nil), "GetWeekGamesResponse.Game")
@@ -727,7 +727,7 @@ var _ server.Option
 // Client API for DatabaseService service
 
 type DatabaseServiceClient interface {
-	UpdateGame(ctx context.Context, in *AddGameRequest, opts ...client.CallOption) (*AddGameResponse, error)
+	UpdateGame(ctx context.Context, in *UpdateGameRequest, opts ...client.CallOption) (*UpdateGameResponse, error)
 	AddBet(ctx context.Context, in *AddBetRequest, opts ...client.CallOption) (*AddBetResponse, error)
 	AddUser(ctx context.Context, in *AddUserRequest, opts ...client.CallOption) (*AddUserResponse, error)
 	GetUserList(ctx context.Context, in *GetUserListRequest, opts ...client.CallOption) (*GetUserListResponse, error)
@@ -754,9 +754,9 @@ func NewDatabaseServiceClient(serviceName string, c client.Client) DatabaseServi
 	}
 }
 
-func (c *databaseServiceClient) UpdateGame(ctx context.Context, in *AddGameRequest, opts ...client.CallOption) (*AddGameResponse, error) {
+func (c *databaseServiceClient) UpdateGame(ctx context.Context, in *UpdateGameRequest, opts ...client.CallOption) (*UpdateGameResponse, error) {
 	req := c.c.NewRequest(c.serviceName, "DatabaseService.UpdateGame", in)
-	out := new(AddGameResponse)
+	out := new(UpdateGameResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -827,7 +827,7 @@ func (c *databaseServiceClient) GetBetsOnGame(ctx context.Context, in *GetBetsOn
 // Server API for DatabaseService service
 
 type DatabaseServiceHandler interface {
-	UpdateGame(context.Context, *AddGameRequest, *AddGameResponse) error
+	UpdateGame(context.Context, *UpdateGameRequest, *UpdateGameResponse) error
 	AddBet(context.Context, *AddBetRequest, *AddBetResponse) error
 	AddUser(context.Context, *AddUserRequest, *AddUserResponse) error
 	GetUserList(context.Context, *GetUserListRequest, *GetUserListResponse) error
@@ -844,7 +844,7 @@ type DatabaseService struct {
 	DatabaseServiceHandler
 }
 
-func (h *DatabaseService) UpdateGame(ctx context.Context, in *AddGameRequest, out *AddGameResponse) error {
+func (h *DatabaseService) UpdateGame(ctx context.Context, in *UpdateGameRequest, out *UpdateGameResponse) error {
 	return h.DatabaseServiceHandler.UpdateGame(ctx, in, out)
 }
 

@@ -84,7 +84,7 @@ func GameAlreadyExists(db *sql.DB, week int32, homeTeam database.TeamCode, awayT
 }
 
 // Handler functions
-func (s *DatabaseHandler) UpdateGame(ctx context.Context, req *database.AddGameRequest, rsp *database.AddGameResponse) error {
+func (s *DatabaseHandler) UpdateGame(ctx context.Context, req *database.UpdateGameRequest, rsp *database.UpdateGameResponse) error {
 	db, err := GetDatabase()
 	if err != nil {
 		log.Println("Error: GetDatabase", err)

@@ -19,9 +19,9 @@ import (
 	"golang.org/x/net/context"
 )
 
-//type Game database.AddGameRequest // TODO Softer type alias in go 1.9
+//type Game database.UpdateGameRequest // TODO Softer type alias in go 1.9
 
-func sendToDatabase(game database.AddGameRequest) {
+func sendToDatabase(game database.UpdateGameRequest) {
 	cl := database.NewDatabaseServiceClient(names.DatabaseSvc, client.DefaultClient)
 
 	ctx := metadata.NewContext(context.Background(), map[string]string{
@@ -31,10 +31,10 @@ func sendToDatabase(game database.AddGameRequest) {
 
 	rsp, err := cl.UpdateGame(ctx, &game)
 	if err != nil {
-		fmt.Println("AddGame failed", err)
+		fmt.Println("UpdateGame failed", err)
 	}
 	if rsp.Error != database.ErrorCode_SUCCESS {
-		fmt.Println("AddGame failed with response code", rsp.Error.String())
+		fmt.Println("UpdateGame failed with response code", rsp.Error.String())
 	}
 }
 
@@ -89,7 +89,7 @@ func (g nflGame) GetWeek() int32 {
 	return int32(i)
 }
 
-func parseJson(jsonStr string) (error, []database.AddGameRequest) {
+func parseJson(jsonStr string) (error, []database.UpdateGameRequest) {
 	fmt.Println("Retreived json:", jsonStr)
 	str := strings.Replace(jsonStr, ",,", ",\"\",", -1)
 	str = strings.Replace(str, ",,", ",\"\",", -1)
@@ -101,10 +101,10 @@ func parseJson(jsonStr string) (error, []database.AddGameRequest) {
 		return err, nil
 	}
 
-	var games []database.AddGameRequest
+	var games []database.UpdateGameRequest
 	for _, strs := range n.SS {
 		g := nflGame(strs)
-		games = append(games, database.AddGameRequest{
+		games = append(games, database.UpdateGameRequest{
 			Week:      g.GetWeek(),
 			HomeTeam:  g.GetHomeTeam(),
 			AwayTeam:  g.GetAwayTeam(),
@@ -117,7 +117,7 @@ func parseJson(jsonStr string) (error, []database.AddGameRequest) {
 	return nil, games
 }
 
-func getJson(url string) (error, []database.AddGameRequest) {
+func getJson(url string) (error, []database.UpdateGameRequest) {
 	r, err := (&http.Client{Timeout: 10 * time.Second}).Get(url)
 	if err != nil {
 		fmt.Println("Error getting json from nfl:", err)

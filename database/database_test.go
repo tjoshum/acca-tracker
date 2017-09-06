@@ -17,7 +17,7 @@ func TestGames(t *testing.T) {
 	homeTeam := database.TeamCode_Carolina
 	awayTeam := database.TeamCode_Baltimore
 
-	add_req := &database.AddGameRequest{
+	add_req := &database.UpdateGameRequest{
 		Week:      0,
 		HomeTeam:  homeTeam,
 		AwayTeam:  awayTeam,
@@ -26,7 +26,7 @@ func TestGames(t *testing.T) {
 		Active:    true,
 		Final:     false,
 	}
-	add_rsp := &database.AddGameResponse{}
+	add_rsp := &database.UpdateGameResponse{}
 	d.UpdateGame(context.TODO(), add_req, add_rsp)
 
 	get_req := &database.GetWeekGamesRequest{
@@ -97,7 +97,7 @@ func TestDuplicateGames(t *testing.T) {
 	homeTeam := database.TeamCode_Carolina
 	awayTeam := database.TeamCode_Baltimore
 
-	add_req := &database.AddGameRequest{
+	add_req := &database.UpdateGameRequest{
 		Week:      week,
 		HomeTeam:  homeTeam,
 		AwayTeam:  awayTeam,
@@ -106,7 +106,7 @@ func TestDuplicateGames(t *testing.T) {
 		Active:    true,
 		Final:     false,
 	}
-	add_rsp := &database.AddGameResponse{}
+	add_rsp := &database.UpdateGameResponse{}
 	d.UpdateGame(context.TODO(), add_req, add_rsp)
 
 	// ... check there's still only one there.
