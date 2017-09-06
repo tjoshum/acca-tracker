@@ -29,7 +29,7 @@ func sendToDatabase(game database.AddGameRequest) {
 		"X-From-Id": names.GameDaemon,
 	})
 
-	rsp, err := cl.AddGame(ctx, &game)
+	rsp, err := cl.UpdateGame(ctx, &game)
 	if err != nil {
 		fmt.Println("AddGame failed", err)
 	}

@@ -27,7 +27,7 @@ func TestGames(t *testing.T) {
 		Final:     false,
 	}
 	add_rsp := &database.AddGameResponse{}
-	d.AddGame(context.TODO(), add_req, add_rsp)
+	d.UpdateGame(context.TODO(), add_req, add_rsp)
 
 	get_req := &database.GetWeekGamesRequest{
 		Week: 0,
@@ -47,7 +47,7 @@ func TestGames(t *testing.T) {
 	// Just to populate the database a bit more:
 	add_req.HomeTeam = database.TeamCode_GreenBay
 	add_req.AwayTeam = database.TeamCode_Buffalo
-	err := d.AddGame(context.TODO(), add_req, add_rsp)
+	err := d.UpdateGame(context.TODO(), add_req, add_rsp)
 	if err != nil {
 		t.Error("Get error on second game add", err)
 	}
@@ -107,7 +107,7 @@ func TestDuplicateGames(t *testing.T) {
 		Final:     false,
 	}
 	add_rsp := &database.AddGameResponse{}
-	d.AddGame(context.TODO(), add_req, add_rsp)
+	d.UpdateGame(context.TODO(), add_req, add_rsp)
 
 	// ... check there's still only one there.
 	get_rsp2 := &database.GetWeekGamesResponse{}
