@@ -5,14 +5,15 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
-
-	"strconv"
 
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/cmd"
 	"github.com/micro/go-micro/metadata"
+	"github.com/prometheus/common/log"
 	"github.com/tjoshum/acca-tracker/database/proto"
 	"github.com/tjoshum/acca-tracker/lib/names"
 	"golang.org/x/net/context"
@@ -35,7 +36,6 @@ func sendToDatabase(game database.AddGameRequest) {
 	if rsp.Error != database.ErrorCode_SUCCESS {
 		fmt.Println("AddGame failed with response code", rsp.Error.String())
 	}
-	fmt.Println("Returning from sendToDatabase")
 }
 
 type nflRawStruct struct {
@@ -53,30 +53,44 @@ func (g nflGame) GetHomeTeam() database.TeamCode {
 }
 
 func (g nflGame) GetHomeScore() int32 {
-	i, err := strconv.Atoi(g[5])
+	score := g[5]
+	if score == "" {
+		return 0
+	}
+	i, err := strconv.Atoi(score)
 	if err != nil {
+		log.Fatalf("Failed to translate home score '%s'", score)
 		return -1
 	}
 	return int32(i)
 }
 
 func (g nflGame) GetAwayScore() int32 {
-	i, err := strconv.Atoi(g[7])
+	score := g[7]
+	if score == "" {
+		return 0
+	}
+	i, err := strconv.Atoi(score)
 	if err != nil {
+		log.Fatalf("Failed to translate away score '%s'", score)
 		return -1
 	}
 	return int32(i)
 }
 
 func (g nflGame) GetWeek() int32 {
-	i, err := strconv.Atoi(g[12])
+	re := regexp.MustCompile("^[A-Z]+([0-9]+)$")
+	week := re.FindStringSubmatch(g[12])[1]
+	i, err := strconv.Atoi(week)
 	if err != nil {
+		log.Fatalf("Failed to translate week '%s'", g[12])
 		return 0
 	}
 	return int32(i)
 }
 
 func parseJson(jsonStr string) (error, []database.AddGameRequest) {
+	fmt.Println("Retreived json:", jsonStr)
 	str := strings.Replace(jsonStr, ",,", ",\"\",", -1)
 	str = strings.Replace(str, ",,", ",\"\",", -1)
 
@@ -121,13 +135,9 @@ func getJson(url string) (error, []database.AddGameRequest) {
 
 // Fetches the games for this week and sends them to the database.
 func fetchCurrentGames() {
-	fmt.Println("Running getjson")
 	_, games := getJson("http://www.nfl.com/liveupdate/scorestrip/scorestrip.json")
-	fmt.Println("Ret getjson")
 	for _, g := range games {
-		fmt.Println("Running sendToDatabase")
 		sendToDatabase(g)
-		fmt.Println("Ret sendToDatabase")
 	}
 }
 

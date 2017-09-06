@@ -23,6 +23,6 @@ func TestJsonParse(t *testing.T) {
 	}
 	assertEqual(games[0].HomeTeam, database.TeamCode_Arizona, t)
 	assertEqual(games[0].AwayTeam, database.TeamCode_Dallas, t)
-	assertEqual(games[0].HomeScore, int32(-1), t)
-	assertEqual(games[0].AwayScore, int32(-1), t)
+	assertEqual(games[0].HomeScore, int32(0), t)
+	assertEqual(games[0].AwayScore, int32(0), t)
 }

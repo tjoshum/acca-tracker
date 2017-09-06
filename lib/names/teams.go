@@ -58,8 +58,10 @@ var lookupArr = map[string]database.TeamCode{
 	"JAX":          database.TeamCode_Jacksonville,
 
 	"Los Angeles Rams": database.TeamCode_LosAngeles,
-	"LosAngeles":       database.TeamCode_LosAngeles,
 	"LA":               database.TeamCode_LosAngeles,
+
+	"Los Angeles Chargers": database.TeamCode_SanDiego,
+	"LAC": database.TeamCode_SanDiego,
 
 	"KansasCity": database.TeamCode_KansasCity,
 	"KC":         database.TeamCode_KansasCity,
@@ -84,9 +86,6 @@ var lookupArr = map[string]database.TeamCode{
 
 	"SanFrancisco": database.TeamCode_SanFrancisco,
 	"SF":           database.TeamCode_SanFrancisco,
-
-	"SanDiego": database.TeamCode_SanDiego,
-	"SD":       database.TeamCode_SanDiego,
 
 	"Oakland": database.TeamCode_Oakland,
 	"OAK":     database.TeamCode_Oakland,
