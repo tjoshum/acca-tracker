@@ -12,6 +12,7 @@ import (
 
 type DatabaseHandler struct{}
 
+// Helper functions
 func GetDatabase() (*sql.DB, error) {
 	db, err := sql.Open(constants.DatabaseDriver, constants.ServerString)
 	if err != nil {
@@ -64,6 +65,25 @@ func toInt(b bool) int {
 	}
 }
 
+// Export name for unit testing TODO Resolve
+func GameAlreadyExists(db *sql.DB, week int32, homeTeam database.TeamCode, awayTeam database.TeamCode) (bool, error) {
+	str := fmt.Sprintf(
+		"SELECT COUNT(*) FROM %s WHERE week = %d AND homeTeam = \"%s\" AND awayTeam = \"%s\"",
+		constants.GameTableName,
+		week,
+		homeTeam,
+		awayTeam,
+	)
+	count := 0
+	err := db.QueryRow(str).Scan(&count)
+	if err != nil {
+		log.Println("Error: Table entry", err)
+		return false, err
+	}
+	return count != 0, nil
+}
+
+// Handler functions
 func (s *DatabaseHandler) AddGame(ctx context.Context, req *database.AddGameRequest, rsp *database.AddGameResponse) error {
 	db, err := GetDatabase()
 	if err != nil {
@@ -72,24 +92,46 @@ func (s *DatabaseHandler) AddGame(ctx context.Context, req *database.AddGameRequ
 	}
 	defer db.Close()
 
-	str := fmt.Sprintf(
-		"INSERT INTO %s (week, homeTeam, awayTeam, homeScore, awayScore, active, final) VALUES(%d,\"%s\",\"%s\",%d,%d,%d,%d)",
-		constants.GameTableName,
-		req.Week,
-		req.HomeTeam,
-		req.AwayTeam,
-		req.HomeScore,
-		req.AwayScore,
-		toInt(req.Active),
-		toInt(req.Final))
+	var str string
+	exists, err := GameAlreadyExists(db, req.Week, req.HomeTeam, req.AwayTeam)
+	if err != nil {
+		log.Println("Error checking whether game exists", err)
+		return nil
+	}
+	if exists {
+		str = fmt.Sprintf(
+			"UPDATE %s "+
+				"SET homeScore = %d AND awayScore = %d AND active = %d AND final = %d "+
+				"WHERE week = %d AND homeTeam = \"%s\" AND awayTeam = \"%s\"",
+			constants.GameTableName,
+			req.HomeScore,
+			req.AwayScore,
+			toInt(req.Active),
+			toInt(req.Final),
+			req.Week,
+			req.HomeTeam,
+			req.AwayTeam,
+		)
+	} else {
+		str = fmt.Sprintf(
+			"INSERT INTO %s (week, homeTeam, awayTeam, homeScore, awayScore, active, final) VALUES(%d,\"%s\",\"%s\",%d,%d,%d,%d)",
+			constants.GameTableName,
+			req.Week,
+			req.HomeTeam,
+			req.AwayTeam,
+			req.HomeScore,
+			req.AwayScore,
+			toInt(req.Active),
+			toInt(req.Final),
+		)
+	}
+
 	log.Println("Attempting SQL '" + str + "'...")
 	_, err = db.Exec(str)
 	if err != nil {
 		log.Println("Error: Table entry", err)
 		return err
 	}
-
-	// TODO db.LastInsertId
 
 	log.Println("Successfully added.")
 	return nil

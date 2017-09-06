@@ -53,6 +53,70 @@ func TestGames(t *testing.T) {
 	}
 }
 
+func TestChecking(t *testing.T) {
+	d, err := handlers.GetDatabase()
+	if err != nil {
+		t.Error("Failed to get database", err)
+	}
+	exists, err := handlers.GameAlreadyExists(d, 0, database.TeamCode_Carolina, database.TeamCode_Baltimore)
+	if err != nil {
+		t.Error("Failed to check", err)
+	}
+	if !exists {
+		t.Error("Didn't find existing game", err)
+	}
+
+	exists, err = handlers.GameAlreadyExists(d, 1, database.TeamCode_Carolina, database.TeamCode_Baltimore)
+	if exists {
+		t.Error("Found non-existant game (week)", err)
+	}
+
+	exists, err = handlers.GameAlreadyExists(d, 0, database.TeamCode_GreenBay, database.TeamCode_Baltimore)
+	if exists {
+		t.Error("Found non-existant game (teams)", err)
+	}
+
+}
+
+// Test adding the above games a second time. Should replace the first instance.
+func TestDuplicateGames(t *testing.T) {
+	d := new(handlers.DatabaseHandler)
+
+	// Check there's one already there...
+	week := int32(0)
+	get_req := &database.GetWeekGamesRequest{
+		Week: week,
+	}
+	get_rsp1 := &database.GetWeekGamesResponse{}
+	d.GetWeekGames(context.TODO(), get_req, get_rsp1)
+	if len(get_rsp1.GetGames()) != 2 {
+		t.Error("No initial games found.")
+	}
+
+	// ... add another...
+	homeTeam := database.TeamCode_Carolina
+	awayTeam := database.TeamCode_Baltimore
+
+	add_req := &database.AddGameRequest{
+		Week:      week,
+		HomeTeam:  homeTeam,
+		AwayTeam:  awayTeam,
+		HomeScore: 10,
+		AwayScore: 6,
+		Active:    true,
+		Final:     false,
+	}
+	add_rsp := &database.AddGameResponse{}
+	d.AddGame(context.TODO(), add_req, add_rsp)
+
+	// ... check there's still only one there.
+	get_rsp2 := &database.GetWeekGamesResponse{}
+	d.GetWeekGames(context.TODO(), get_req, get_rsp2)
+	if len(get_rsp2.GetGames()) != 2 {
+		t.Error("Unexpected extra game found.", get_rsp2.GetGames())
+	}
+}
+
 func TestUsers(t *testing.T) {
 	d := new(handlers.DatabaseHandler)
 
