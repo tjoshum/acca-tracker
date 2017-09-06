@@ -18,7 +18,7 @@ func TestGames(t *testing.T) {
 	awayTeam := database.TeamCode_Baltimore
 
 	add_req := &database.AddGameRequest{
-		Week:      1,
+		Week:      0,
 		HomeTeam:  homeTeam,
 		AwayTeam:  awayTeam,
 		HomeScore: 0,
@@ -30,7 +30,7 @@ func TestGames(t *testing.T) {
 	d.AddGame(context.TODO(), add_req, add_rsp)
 
 	get_req := &database.GetWeekGamesRequest{
-		Week: 1,
+		Week: 0,
 	}
 	get_rsp := &database.GetWeekGamesResponse{}
 	d.GetWeekGames(context.TODO(), get_req, get_rsp)
@@ -118,7 +118,7 @@ func TestBets(t *testing.T) {
 	d.AddBet(context.TODO(), add_req, add_rsp)
 
 	get_req := &database.GetUserBetsRequest{
-		Week: 1,
+		Week: 0,
 		User: user1,
 	}
 	get_rsp := &database.GetUserBetsResponse{}

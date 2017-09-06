@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"strconv"
 
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/cmd"
@@ -140,8 +141,13 @@ func getRowColour(rownum int) string {
 	}
 }
 
-func viewHandler(w http.ResponseWriter, r *http.Request) {
-	localTable := createTable(1)
+func weekViewHandler(w http.ResponseWriter, r *http.Request) {
+	week, err := strconv.Atoi(r.URL.Path[len("/week/"):])
+	if err != nil {
+		w.Write([]byte("Failed to find week"))
+		return
+	}
+	localTable := createTable(int32(week))
 
 	d := &HeaderData{
 		Title: "NFL Betting Results",
@@ -192,6 +198,6 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	cmd.Init()
-	http.HandleFunc("/", viewHandler)
+	http.HandleFunc("/week/", weekViewHandler)
 	http.ListenAndServe(":80", nil)
 }
