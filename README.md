@@ -13,8 +13,9 @@ go get https://github.com/tjoshum/acca-tracker
 ./acca-tracker/deploy/deploy.sh
 ```
 
-## Starting the game update daemon
-TODO
+## The game update daemon
+From deployment, the game daemon starts running, updating the database every 30 seconds with the latest results.
+You may wish to stop it, with `docker stop deploy_gamed_1` to avoid spamming nfl.com.
 
 ## Manually adding a bet
 After deployment:
