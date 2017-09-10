@@ -5,4 +5,4 @@ os: linux
 sudo: required
 script:
 - go get -v -t -d ./...
-- bash ./deploy/deploy.sh
+- bash ./deploy/deploy.sh test

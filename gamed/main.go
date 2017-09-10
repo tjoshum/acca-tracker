@@ -143,5 +143,8 @@ func updateCurrentGames() {
 
 func main() {
 	cmd.Init()
-	updateCurrentGames()
+	for {
+		updateCurrentGames()
+		time.Sleep(30 * time.Second)
+	}
 }

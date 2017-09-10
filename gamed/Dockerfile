@@ -7,4 +7,4 @@ RUN wget --quiet https://storage.googleapis.com/golang/go1.8.1.linux-amd64.tar.g
     tar -C /usr/local -xzfgo1.8.1.linux-amd64.tar.gz && \
     ln /usr/local/go/bin/go /usr/bin/go
 
-CMD while true; do sleep 600; done
+CMD $GOPATH/src/github.com/tjoshum/acca-tracker/gamed/run.sh
