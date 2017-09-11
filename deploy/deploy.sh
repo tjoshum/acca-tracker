@@ -39,6 +39,5 @@ docker-compose up -d --build gamed
 
 if [[ $1 == "test" ]]; then
   # Quick and dirty hack. Test within the database container, so I can connect to it in travis.
-  sleep 5
   docker exec -it deploy_database_1 bash -c "cd /opt/dev/go/src/github.com/tjoshum/acca-tracker; go test -v ./..."
 fi
