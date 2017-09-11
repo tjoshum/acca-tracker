@@ -11,7 +11,8 @@ A VM running Ubuntu 16.04 LTS, with the following installed:
 ## Getting Started
 ```
 go get https://github.com/tjoshum/acca-tracker
-./acca-tracker/deploy/deploy.sh
+cd $GOPATH/src/github.com/tjoshum/acca-tracker
+./deploy/deploy.sh
 ```
 
 ## The game update daemon
@@ -21,6 +22,7 @@ You may wish to stop it, with `docker stop deploy_gamed_1` to avoid spamming nfl
 ## Manually adding a bet
 After deployment:
 ```
+cd $GOPATH/src/github.com/tjoshum/acca-tracker
 go run ./bet_getter/manual/main.go
 ```
 
