@@ -3,15 +3,18 @@
 TravisCI Status: [![Build Status](https://travis-ci.org/tjoshum/acca-tracker.svg?branch=master)](https://travis-ci.org/tjoshum/acca-tracker)
 
 ## Prerequisites
-A VM running Ubuntu 16.04 LTS, with the following installed:
-- Go
-- Docker
-- Docker Compose
+A freshly install instance of Ubuntu 16.04 LTS, with an internet connection.
 
-## Getting Started
+## Installation
+Copy the installer script from `deploy/install.sh` onto a freshly installed instance of Ubuntu 16.04 LTS, and run it.
+You should see output ending:
 ```
-go get https://github.com/tjoshum/acca-tracker
-cd $GOPATH/src/github.com/tjoshum/acca-tracker
+SUCCESS: Acca-tracker is available at /root/go/src/github.com/tjoshum/acca-tracker
+```
+
+## Deployment
+Change to the directory where acca-tracker was installed, and run the deploy script:
+```
 ./deploy/deploy.sh
 ```
 
