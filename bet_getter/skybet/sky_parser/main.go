@@ -18,14 +18,18 @@ import (
 	"golang.org/x/net/context"
 )
 
-func getUserEnv() string {
+func getPrompt(prompt string) string {
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("SkyBet Username: ")
+	fmt.Printf("%s: ", prompt)
 	text, err := reader.ReadString('\n')
 	if err != nil {
-		log.Fatal("Error getting password", err)
+		log.Fatal("Error getting prompt", err)
 	}
-	username := strings.TrimSuffix(text, "\n")
+	return strings.TrimSuffix(text, "\n")
+}
+
+func getUserEnv() string {
+	username := getPrompt("SkyBet Username")
 	return fmt.Sprintf("SKYBETUSER=%s", username)
 }
 
@@ -47,16 +51,14 @@ func main() {
 	}
 	raw_html := string(buf)
 
-	re := regexp.MustCompile("(?s)<div class=\"four-six\">.+?</div>")
-	slice := re.FindAllStringSubmatch(raw_html, -1)
-
 	cl := database.NewDatabaseServiceClient(names.DatabaseSvc, client.DefaultClient)
-
 	ctx := metadata.NewContext(context.Background(), map[string]string{
 		"X-User-Id": "no-user",
 		"X-From-Id": names.GameDaemon,
 	})
 
+	re := regexp.MustCompile("(?s)<div class=\"four-six\">.+?</div>")
+	slice := re.FindAllStringSubmatch(raw_html, -1)
 	for _, game := range slice {
 		one_raw_game := game[0]
 		bet_on_re := regexp.MustCompile(`(?s)<h3>.+?([A-Z][A-z ]+[a-z]) (\((.[0-9\.]+)\))?.+</h3>`)
@@ -75,9 +77,8 @@ func main() {
 			GameId:   1,
 			BetOn:    database.TeamCode_Atlanta,
 			Spread:   -1,
-			Username: "abc",
+			Username: getPrompt("Username for this bet"),
 		}
-
 		cl.AddBet(ctx, &req)
 
 	}

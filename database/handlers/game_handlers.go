@@ -137,6 +137,10 @@ func (s *DatabaseHandler) UpdateGame(ctx context.Context, req *database.UpdateGa
 	return nil
 }
 
+func (s *DatabaseHandler) GetGame(context.Context, *database.GetGameRequest, *database.GetGameResponse) error {
+	return nil
+}
+
 func (s *DatabaseHandler) AddBet(ctx context.Context, req *database.AddBetRequest, rsp *database.AddBetResponse) error {
 	db, err := GetDatabase()
 	if err != nil {
@@ -219,7 +223,7 @@ func (s *DatabaseHandler) GetWeekGames(ctx context.Context, req *database.GetWee
 		}
 		fmt.Println("DEBUG GetWeekGames: Game", gameId, "week", week, "home team", homeTeam, "away team", awayTeam)
 
-		rsp.Games = append(rsp.Games, &database.GetWeekGamesResponse_Game{
+		rsp.Games = append(rsp.Games, &database.Game{
 			gameId,
 			stringToTeamCode(homeTeam),
 			stringToTeamCode(awayTeam),

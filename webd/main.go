@@ -24,7 +24,7 @@ type displayBets struct {
 type Username string
 type UserMap map[int32]Username
 type BetsOnAGame map[Username]displayBets
-type MyTable map[database.GetWeekGamesResponse_Game]BetsOnAGame // games -> {users -> bets}
+type MyTable map[database.Game]BetsOnAGame // games -> {users -> bets}
 
 func GetUserMapping(cl database.DatabaseServiceClient, ctx context.Context) UserMap {
 	rsp, err := cl.GetUserList(ctx, &database.GetUserListRequest{})
@@ -38,7 +38,7 @@ func GetUserMapping(cl database.DatabaseServiceClient, ctx context.Context) User
 	return ret
 }
 
-func GetGames(cl database.DatabaseServiceClient, ctx context.Context, weekNum int32) []*database.GetWeekGamesResponse_Game {
+func GetGames(cl database.DatabaseServiceClient, ctx context.Context, weekNum int32) []*database.Game {
 	rsp, err := cl.GetWeekGames(ctx, &database.GetWeekGamesRequest{
 		Week: weekNum,
 	})
@@ -59,7 +59,7 @@ func GetBetsOnGame(cl database.DatabaseServiceClient, ctx context.Context, gameI
 	return rsp.GetBets()
 }
 
-func GetClassString(game database.GetWeekGamesResponse_Game, bet *database.GetBetsOnGameResponse_Bet) string {
+func GetClassString(game database.Game, bet *database.GetBetsOnGameResponse_Bet) string {
 	if game.GetActive() {
 		if bet.GetBetOn() == game.GetHomeTeam() {
 			if (game.HomeScore + bet.Spread) > game.AwayScore {
@@ -117,7 +117,7 @@ type HeaderData struct {
 
 // Data to be passed in to the row html template
 type RowData struct {
-	Game        database.GetWeekGamesResponse_Game
+	Game        database.Game
 	RowColour   string
 	Predictions []displayBets
 }

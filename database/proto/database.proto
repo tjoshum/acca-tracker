@@ -10,6 +10,7 @@ service DatabaseService {
     rpc UpdateGame(UpdateGameRequest) returns (UpdateGameResponse);
     rpc AddBet (AddBetRequest)  returns (AddBetResponse);
     rpc AddUser(AddUserRequest) returns (AddUserResponse);
+    rpc GetGame (GetGameRequest) returns (GetGameResponse);
     rpc GetUserList (GetUserListRequest) returns (GetUserListResponse);
     rpc GetUserBets (GetUserBetsRequest) returns (GetUserBetsResponse);
     rpc GetWeekGames(GetWeekGamesRequest) returns (GetWeekGamesResponse);
@@ -58,7 +59,7 @@ enum TeamCode {
   Buffalo=32;
 }
 
-message AddGameRequest {
+message UpdateGameRequest {
     int32 week = 1;
     TeamCode homeTeam = 2;
     TeamCode awayTeam = 3;
@@ -68,9 +69,29 @@ message AddGameRequest {
     bool final = 7;
 }
 
-message AddGameResponse {
+message UpdateGameResponse {
     ErrorCode error = 1;
     int32 gameId = 2;
+}
+
+message Game {
+    int32 gameId = 1;
+    TeamCode homeTeam = 2;
+    TeamCode awayTeam = 3;
+    int32 homeScore = 4;
+    int32 awayScore = 5;
+    bool active = 6;
+    bool final = 7;
+}
+
+message GetGameRequest {
+    TeamCode homeTeam = 2;
+    TeamCode awayTeam = 3;
+}
+
+message GetGameResponse {
+    ErrorCode error = 1;
+    Game game = 2;
 }
 
 // Get the games occuring in a week
@@ -80,16 +101,6 @@ message GetWeekGamesRequest {
 
 message GetWeekGamesResponse {
     ErrorCode error = 1;
-
-    message Game {
-        int32 gameId = 1;
-        TeamCode homeTeam = 2;
-        TeamCode awayTeam = 3;
-        int32 homeScore = 4;
-        int32 awayScore = 5;
-        bool active = 6;
-        bool final = 7;
-    }
     repeated Game games = 2;
 }
 
