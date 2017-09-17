@@ -44,16 +44,16 @@ type nflRawStruct struct {
 
 type nflGame []string
 
-func (g nflGame) GetAwayTeam() database.TeamCode {
-	return names.GetTeamCode(g[4])
-}
-
 func (g nflGame) GetHomeTeam() database.TeamCode {
 	return names.GetTeamCode(g[6])
 }
 
+func (g nflGame) GetAwayTeam() database.TeamCode {
+	return names.GetTeamCode(g[4])
+}
+
 func (g nflGame) GetHomeScore() int32 {
-	score := g[5]
+	score := g[7]
 	if score == "" {
 		return 0
 	}
@@ -66,7 +66,7 @@ func (g nflGame) GetHomeScore() int32 {
 }
 
 func (g nflGame) GetAwayScore() int32 {
-	score := g[7]
+	score := g[5]
 	if score == "" {
 		return 0
 	}

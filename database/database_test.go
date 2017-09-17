@@ -21,8 +21,8 @@ func TestGames(t *testing.T) {
 		Week:      0,
 		HomeTeam:  homeTeam,
 		AwayTeam:  awayTeam,
-		HomeScore: 0,
-		AwayScore: 0,
+		HomeScore: 10,
+		AwayScore: 20,
 		Active:    true,
 		Final:     false,
 	}
@@ -41,6 +41,12 @@ func TestGames(t *testing.T) {
 		}
 		if game.AwayTeam != awayTeam {
 			t.Errorf("Unexpected away team. Got %s expected %s.", game.AwayTeam, awayTeam)
+		}
+		if game.HomeScore != 10 {
+			t.Errorf("Unexpected home score. Got %s expected %s.", game.HomeScore, 10)
+		}
+		if game.AwayScore != 20 {
+			t.Errorf("Unexpected home score. Got %s expected %s.", game.AwayScore, 20)
 		}
 	}
 

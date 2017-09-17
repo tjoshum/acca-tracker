@@ -42,9 +42,10 @@ func getIDForUsername(db *sql.DB, username string) (int32, error) {
 	id_rows, err := db.Query(id_qstr)
 	if err != nil {
 		log.Println("Error: Get user ID", err)
-		return 0, err
+		return -1, err
 	}
 	var userID int32
+	userID = -1
 	for id_rows.Next() {
 		if err := id_rows.Scan(&userID); err != nil {
 			log.Fatal(err)
@@ -98,10 +99,11 @@ func (s *DatabaseHandler) UpdateGame(ctx context.Context, req *database.UpdateGa
 		log.Fatal("Error checking whether game exists", err)
 		return nil
 	}
+
 	if exists {
 		str = fmt.Sprintf(
 			"UPDATE %s "+
-				"SET homeScore = %d AND awayScore = %d AND active = %d AND final = %d "+
+				"SET homeScore = %d, awayScore = %d, active = %d, final = %d "+
 				"WHERE week = %d AND homeTeam = \"%s\" AND awayTeam = \"%s\"",
 			constants.GameTableName,
 			req.HomeScore,
@@ -114,7 +116,7 @@ func (s *DatabaseHandler) UpdateGame(ctx context.Context, req *database.UpdateGa
 		)
 	} else {
 		str = fmt.Sprintf(
-			"INSERT INTO %s (week, homeTeam, awayTeam, homeScore, awayScore, active, final) VALUES(%d,\"%s\",\"%s\",%d,%d,%d,%d)",
+			"INSERT INTO %s (week, homeTeam, awayTeam, homeScore, awayScore, active, final) VALUES (%d,\"%s\",\"%s\",%d,%d,%d,%d)",
 			constants.GameTableName,
 			req.Week,
 			req.HomeTeam,
@@ -199,6 +201,13 @@ func (s *DatabaseHandler) AddBet(ctx context.Context, req *database.AddBetReques
 	defer db.Close()
 
 	userID, err := getIDForUsername(db, req.GetUsername())
+	if userID == -1 {
+		add_user_req := database.AddUserRequest{
+			Username: req.GetUsername(),
+		}
+		add_user_response := database.AddUserResponse{}
+		s.AddUser(ctx, &add_user_req, &add_user_response)
+	}
 
 	str := fmt.Sprintf(
 		"INSERT INTO %s (gameId, userId, betOn, spread) VALUES(%d,%d,\"%s\",%d)",
