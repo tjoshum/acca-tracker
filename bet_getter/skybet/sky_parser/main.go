@@ -68,9 +68,9 @@ func main() {
 
 		spread_str := bet_on_re.FindStringSubmatch(one_raw_game)[3]
 		fmt.Println("Spread:", spread_str)
-		var spread_int int
+		var spread_int float64
 		if spread_str != "" {
-			spread_int, err = strconv.Atoi(spread_str)
+			spread_int, err = strconv.ParseFloat(spread_str, 64)
 			if err != nil {
 				log.Fatal("Failed to convert spread_str", spread_str, err)
 			}
