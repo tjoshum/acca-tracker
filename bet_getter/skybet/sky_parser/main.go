@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"strconv"
 
 	"bufio"
 	"strings"
@@ -65,21 +66,53 @@ func main() {
 		bet_on := bet_on_re.FindStringSubmatch(one_raw_game)[1]
 		fmt.Println("Bet on:", bet_on)
 
-		spread := bet_on_re.FindStringSubmatch(one_raw_game)[3]
-		fmt.Println("Spread:", spread)
+		spread_str := bet_on_re.FindStringSubmatch(one_raw_game)[3]
+		fmt.Println("Spread:", spread_str)
+		var spread_int int
+		if spread_str != "" {
+			spread_int, err = strconv.Atoi(spread_str)
+			if err != nil {
+				log.Fatal("Failed to convert spread_str", spread_str, err)
+			}
+		} else {
+			spread_int = 0
+		}
 
 		game_re := regexp.MustCompile("([A-Z][A-z ]+[a-z]) v ([A-Z][A-z ]+[a-z])")
 		game_slice := game_re.FindStringSubmatch(one_raw_game)
 		fmt.Println("Home Team:", game_slice[1])
 		fmt.Println("Away Team:", game_slice[2])
 
-		req := database.AddBetRequest{
-			GameId:   1,
-			BetOn:    database.TeamCode_Atlanta,
-			Spread:   -1,
+		// Validation here for now
+		if names.GetTeamCode(game_slice[1]) == database.TeamCode_NotATeam {
+			log.Fatal("Failed to translate home ", game_slice[1])
+		}
+		if names.GetTeamCode(game_slice[2]) == database.TeamCode_NotATeam {
+			log.Fatal("Failed to translate away ", game_slice[2])
+		}
+		if names.GetTeamCode(bet_on) == database.TeamCode_NotATeam {
+			log.Fatal("Failed to translate beton ", bet_on)
+		}
+
+		get_game_req := database.GetGameRequest{
+			HomeTeam: names.GetTeamCode(game_slice[1]),
+			AwayTeam: names.GetTeamCode(game_slice[2]),
+		}
+		rsp, err := cl.GetGame(ctx, &get_game_req)
+		if err != nil {
+			log.Fatal("Failed to get game", game_slice[1], game_slice[2], err)
+		}
+		if rsp.Error != database.ErrorCode_SUCCESS {
+
+		}
+
+		add_bet_req := database.AddBetRequest{
+			GameId:   rsp.GetGame().GameId,
+			BetOn:    names.GetTeamCode(bet_on),
+			Spread:   int32(spread_int),
 			Username: getPrompt("Username for this bet"),
 		}
-		cl.AddBet(ctx, &req)
+		cl.AddBet(ctx, &add_bet_req)
 
 	}
 }

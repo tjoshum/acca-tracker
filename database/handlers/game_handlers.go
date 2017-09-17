@@ -87,7 +87,7 @@ func GameAlreadyExists(db *sql.DB, week int32, homeTeam database.TeamCode, awayT
 func (s *DatabaseHandler) UpdateGame(ctx context.Context, req *database.UpdateGameRequest, rsp *database.UpdateGameResponse) error {
 	db, err := GetDatabase()
 	if err != nil {
-		log.Println("Error: GetDatabase", err)
+		log.Fatal("Error: GetDatabase", err)
 		return nil
 	}
 	defer db.Close()
@@ -95,7 +95,7 @@ func (s *DatabaseHandler) UpdateGame(ctx context.Context, req *database.UpdateGa
 	var str string
 	exists, err := GameAlreadyExists(db, req.Week, req.HomeTeam, req.AwayTeam)
 	if err != nil {
-		log.Println("Error checking whether game exists", err)
+		log.Fatal("Error checking whether game exists", err)
 		return nil
 	}
 	if exists {
@@ -126,18 +126,67 @@ func (s *DatabaseHandler) UpdateGame(ctx context.Context, req *database.UpdateGa
 		)
 	}
 
-	log.Println("Attempting SQL '" + str + "'...")
+	//log.Println("Attempting SQL '" + str + "'...")
 	_, err = db.Exec(str)
 	if err != nil {
-		log.Println("Error: Table entry", err)
+		log.Fatal("Error: Table entry", err)
 		return err
 	}
 
-	log.Println("Successfully added.")
+	//log.Println("Successfully added.")
 	return nil
 }
 
-func (s *DatabaseHandler) GetGame(context.Context, *database.GetGameRequest, *database.GetGameResponse) error {
+func (s *DatabaseHandler) GetGame(ctx context.Context, req *database.GetGameRequest, rsp *database.GetGameResponse) error {
+	db, err := GetDatabase()
+	if err != nil {
+		log.Fatal("Error: GetDatabase", err)
+		return nil
+	}
+	defer db.Close()
+
+	str := fmt.Sprintf(
+		"SELECT * FROM %s WHERE homeTeam = \"%s\" AND awayTeam = \"%s\"",
+		constants.GameTableName,
+		req.GetHomeTeam(),
+		req.GetAwayTeam(),
+	)
+
+	fmt.Println("Attempting sql ", str)
+
+	rows, err := db.Query(str)
+	if err != nil {
+		log.Fatal("Error: Table entry", err)
+		return err
+	}
+
+	for rows.Next() {
+		var (
+			gameId    int32
+			week      int32
+			homeTeam  string
+			awayTeam  string
+			homeScore int32
+			awayScore int32
+			active    bool
+			final     bool
+		)
+		if err := rows.Scan(&gameId, &week, &homeTeam, &awayTeam, &homeScore, &awayScore, &active, &final); err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println("DEBUG GetGame: Game", gameId, "week", week, "home team", homeTeam, "away team", awayTeam)
+
+		rsp.Game = &database.Game{
+			gameId,
+			stringToTeamCode(homeTeam),
+			stringToTeamCode(awayTeam),
+			homeScore,
+			awayScore,
+			active,
+			final,
+		}
+	}
+
 	return nil
 }
 
