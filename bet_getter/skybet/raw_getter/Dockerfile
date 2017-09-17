@@ -8,3 +8,5 @@ RUN gem install highline mechanize
 ADD get-raw-bets.rb get-raw-bets.rb
 
 RUN apt-get install -y vim
+
+CMD ./get-raw-bets.rb

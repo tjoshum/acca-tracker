@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 require 'rubygems'
 require 'highline/import'
 require 'mechanize'
@@ -6,12 +8,11 @@ require 'nokogiri'
 OPEN_BET_PAGE = "https://www.skybet.com/secure/identity/m/history/betting?settled=N"
 
 def get_username
-  STDERR.print "Username: "
-  $stdin.gets.strip
+  return ENV['SKYBETUSER']
 end
 
 def get_pin
-  STDERR.ask("PIN: ") {|q| q.echo = false}
+  return ENV['SKYBETPASSWORD']
 end
 
 class LoginFailureException < RuntimeError

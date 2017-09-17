@@ -2,9 +2,15 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"log"
+	"os"
+	"os/exec"
 	"regexp"
 
+	"bufio"
+	"strings"
+
+	"github.com/howeyc/gopass"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/metadata"
 	database "github.com/tjoshum/acca-tracker/database/proto"
@@ -12,12 +18,37 @@ import (
 	"golang.org/x/net/context"
 )
 
+func getUserEnv() string {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("SkyBet Username: ")
+	text, err := reader.ReadString('\n')
+	if err != nil {
+		log.Fatal("Error getting password", err)
+	}
+	username := strings.TrimSuffix(text, "\n")
+	return fmt.Sprintf("SKYBETUSER=%s", username)
+}
+
+func getPasswordEnv() string {
+	fmt.Printf("Password: ")
+	password, err := gopass.GetPasswd()
+	if err != nil {
+		log.Fatal("Error getting password", err)
+	}
+	return fmt.Sprintf("SKYBETPASSWORD=%s", password)
+}
+
 func main() {
-	buf, _ := ioutil.ReadFile("/tmp/def.html")
-	raw := string(buf)
+	cmd := exec.Command("./bet_getter/skybet/raw_getter/get-raw-bets.sh")
+	cmd.Env = append(os.Environ(), getUserEnv(), getPasswordEnv())
+	buf, err := cmd.Output()
+	if err != nil {
+		log.Fatal(string(buf), err)
+	}
+	raw_html := string(buf)
 
 	re := regexp.MustCompile("(?s)<div class=\"four-six\">.+?</div>")
-	slice := re.FindAllStringSubmatch(raw, -1)
+	slice := re.FindAllStringSubmatch(raw_html, -1)
 
 	cl := database.NewDatabaseServiceClient(names.DatabaseSvc, client.DefaultClient)
 

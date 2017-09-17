@@ -142,7 +142,8 @@ func getRowColour(rownum int) string {
 }
 
 func weekViewHandler(w http.ResponseWriter, r *http.Request) {
-	week, err := strconv.Atoi(r.URL.Path[len("/week/"):])
+	week_string := r.URL.Path[len("/week/"):]
+	week, err := strconv.Atoi(week_string)
 	if err != nil {
 		w.Write([]byte("Failed to find week"))
 		return
@@ -151,7 +152,7 @@ func weekViewHandler(w http.ResponseWriter, r *http.Request) {
 
 	d := &HeaderData{
 		Title: "NFL Betting Results",
-		Week:  "1",
+		Week:  week_string,
 	}
 	renderTemplate(w, "head", d)
 
