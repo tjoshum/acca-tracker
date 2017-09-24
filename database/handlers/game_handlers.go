@@ -207,6 +207,7 @@ func (s *DatabaseHandler) AddBet(ctx context.Context, req *database.AddBetReques
 		}
 		add_user_response := database.AddUserResponse{}
 		s.AddUser(ctx, &add_user_req, &add_user_response)
+		userID, _ = getIDForUsername(db, req.GetUsername()) // TODO HACK! Get the user id from the add user response.
 	}
 
 	str := fmt.Sprintf(
