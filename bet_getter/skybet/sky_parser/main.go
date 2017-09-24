@@ -94,6 +94,10 @@ func main() {
 
 			bet_on_re := regexp.MustCompile(`(?s)<h3>.+?([A-Z][A-z ]+[a-z]) (\((.[0-9\.]+)\))?.+</h3>`)
 			bet_on := bet_on_re.FindStringSubmatch(one_raw_game)[1]
+			if len(bet_on) == 0 {
+				fmt.Println("Failed to parse bet: ", one_raw_game)
+				return
+			}
 			fmt.Print("Bet on: ", bet_on, " with")
 
 			spread_str := bet_on_re.FindStringSubmatch(one_raw_game)[3]
