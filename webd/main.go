@@ -22,9 +22,10 @@ type displayBets struct {
 
 // Type safety, to stop me from getting mixed up.
 type Username string
-type UserMap map[int32]Username
 type BetsOnAGame map[Username]displayBets
 type MyTable map[database.Game]BetsOnAGame // games -> {users -> bets}
+
+type UserMap map[int32]Username
 
 func GetUserMapping(cl database.DatabaseServiceClient, ctx context.Context) UserMap {
 	rsp, err := cl.GetUserList(ctx, &database.GetUserListRequest{})

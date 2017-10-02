@@ -22,8 +22,6 @@ services:
   gamed:
     build:
       context: $GOPATH/src/github.com/tjoshum/acca-tracker/gamed
-    depends_on:
-      - "consul"
     network_mode: "bridge"
     volumes:
       - $GOPATH:/opt/dev/go # Just to allow us to quickly develop for now.
@@ -33,8 +31,6 @@ services:
   webd:
     build:
       context: $GOPATH/src/github.com/tjoshum/acca-tracker/webd
-    depends_on:
-      - "consul"
     network_mode: "bridge"
     ports:
       - "80:80"
