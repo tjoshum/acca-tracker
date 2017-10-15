@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"sort"
 	"strconv"
 
 	"github.com/micro/go-micro/client"
@@ -142,6 +143,19 @@ func getRowColour(rownum int) string {
 	}
 }
 
+// For sorting
+type bob []database.Game
+
+func (s bob) Len() int {
+	return len(s)
+}
+func (s bob) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+func (s bob) Less(i, j int) bool {
+	return s[j].HomeTeam < s[i].HomeTeam
+}
+
 func weekViewHandler(w http.ResponseWriter, r *http.Request) {
 	week_string := r.URL.Path[len("/week/"):]
 	week, err := strconv.Atoi(week_string)
@@ -170,8 +184,17 @@ func weekViewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	renderTemplate(w, "table_headings", users)
 
+	array := make([]database.Game, len(localTable))
+	i := 0
+	for game, _ := range localTable {
+		array[i] = game
+		i++
+	}
+	sort.Sort(bob(array))
+
 	rownum := 0
-	for game, userToBetMap := range localTable {
+	for _, game := range array {
+		userToBetMap := localTable[game]
 		fmt.Println("DEBUG LogAGame", game)
 		var bets []displayBets
 
