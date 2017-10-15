@@ -68,6 +68,25 @@ func getValidUsername(cl database.DatabaseServiceClient, ctx context.Context) st
 	return entered
 }
 
+func getSpread(one_raw_game string) float64 {
+	handicap_re := regexp.MustCompile(`Handicap ((\+|\-)?[0-9\.]+)`)
+	match := handicap_re.FindStringSubmatch(one_raw_game)
+	var spread_int float64
+	var err error
+	if len(match) != 0 {
+		spread_str := match[1]
+		fmt.Println(" spread", spread_str)
+		spread_int, err = strconv.ParseFloat(spread_str, 64)
+		if err != nil {
+			log.Fatal("Failed to convert spread_str", spread_str, err)
+		}
+	} else {
+		fmt.Println(" no spread")
+		spread_int = 0
+	}
+	return spread_int
+}
+
 func main() {
 	cl := database.NewDatabaseServiceClient(names.DatabaseSvc, client.DefaultClient)
 	ctx := metadata.NewContext(context.Background(), map[string]string{
@@ -75,9 +94,7 @@ func main() {
 		"X-From-Id": names.GameDaemon,
 	})
 
-	//	getValidUsername(cl, ctx)
-	//	return
-
+	fmt.Println("Building docker container. This may take some time if the cache is cold...")
 	cmd := exec.Command("./bet_getter/skybet/raw_getter/get-raw-bets.sh")
 	cmd.Env = append(os.Environ(), getUserEnv(), getPasswordEnv())
 	buf, err := cmd.Output()
@@ -92,26 +109,14 @@ func main() {
 		one_bet.Find(".four-six").Each(func(_ int, acc_line *goquery.Selection) {
 			one_raw_game, _ := acc_line.Html()
 
-			bet_on_re := regexp.MustCompile(`(?s)<h3>.+?([A-Z][A-z ]+[a-z]) (\((.[0-9\.]+)\))?.+</h3>`)
+			bet_on_re := regexp.MustCompile(`(?s)<h3>.+?([A-Z][A-z ]+[a-z]) .+</h3>`)
 			bet_on := bet_on_re.FindStringSubmatch(one_raw_game)[1]
 			if len(bet_on) == 0 {
 				fmt.Println("Failed to parse bet: ", one_raw_game)
 				return
 			}
 			fmt.Print("Bet on: ", bet_on, " with")
-
-			spread_str := bet_on_re.FindStringSubmatch(one_raw_game)[3]
-			var spread_int float64
-			if spread_str != "" {
-				fmt.Println(" spread", spread_str)
-				spread_int, err = strconv.ParseFloat(spread_str, 64)
-				if err != nil {
-					log.Fatal("Failed to convert spread_str", spread_str, err)
-				}
-			} else {
-				fmt.Println(" no spread")
-				spread_int = 0
-			}
+			spread_int := getSpread(one_raw_game)
 
 			game_re := regexp.MustCompile("([A-Z][A-z ]+[a-z]) v ([A-Z][A-z ]+[a-z])")
 			game_slice := game_re.FindStringSubmatch(one_raw_game)
@@ -135,6 +140,9 @@ func main() {
 			if err != nil {
 				log.Fatal("Failed to get game", game_slice[1], game_slice[2], err)
 			}
+			if rsp.GetGame() == nil {
+				log.Fatal("Failed to get not nil game", game_slice[1], game_slice[2])
+			}
 
 			bets = append(bets, &database.AddBetRequest{
 				GameId: rsp.GetGame().GameId,
@@ -144,7 +152,6 @@ func main() {
 
 		})
 		fmt.Println("END OF ACCUMULATOR")
-		//username_for_this_accumulator := getValidUsername(cl, ctx)
 		username_for_this_accumulator := getPrompt("Name for this accumulator")
 		for _, b := range bets {
 			b.Username = username_for_this_accumulator
