@@ -18,6 +18,12 @@ Change to the directory where acca-tracker was installed, and run the deploy scr
 ./deploy/deploy.sh
 ```
 
+### Upgrading
+To upgrade an already running instance:
+```
+./deploy/upgrade.sh
+```
+
 ## The game update daemon
 From deployment, the game daemon starts running, updating the database every 30 seconds with the latest results.
 You may wish to stop it, with `docker stop deploy_gamed_1` to avoid spamming nfl.com.
