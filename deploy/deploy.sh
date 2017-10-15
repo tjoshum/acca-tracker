@@ -33,13 +33,23 @@ if [ -z $DOCKER_ADDRESS ]; then
   export DOCKER_ADDRESS=$(ifconfig docker0 | sed -n -e 's/.*inet addr:\([0-9]*\.*[0-9]*\.[0-9]\.[0-9]\).*/\1/p')
 fi
 
-# For dev, cleanup any old containers.
-./teardown.sh
+# Set off some long running jobs in parallel.
+./teardown.sh& # For dev, cleanup any old containers.
+echo "Building containers..."
+docker-compose build database&
+docker-compose build webd&
+docker-compose build gamed&
+docker-compose build skybet& # Just to get this into the cache, so that adding bets is quicker.
 
-docker-compose up -d --build database
+# Wait for the long running jobs to finish
+for job in `jobs -p`; do
+    wait $job
+done
+
+docker-compose up -d database
 sleep 10
-docker-compose up -d --build webd
-docker-compose up -d --build gamed
+docker-compose up -d webd
+docker-compose up -d gamed
 
 if [[ $1 == "test" ]]; then
   # Quick and dirty hack. Test within the database container, so I can connect to it in travis.

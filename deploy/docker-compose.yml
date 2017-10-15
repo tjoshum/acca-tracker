@@ -39,3 +39,6 @@ services:
     environment:
       - GOPATH=/opt/dev/go
       - REGISTRY_ADDRESS=$DOCKER_ADDRESS
+  skybet:
+    build:
+      context: $GOPATH/src/github.com/tjoshum/acca-tracker/bet_getter/skybet/raw_getter
