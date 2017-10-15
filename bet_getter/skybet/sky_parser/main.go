@@ -69,12 +69,20 @@ func getValidUsername(cl database.DatabaseServiceClient, ctx context.Context) st
 }
 
 func getSpread(one_raw_game string) float64 {
-	handicap_re := regexp.MustCompile(`Handicap ((\+|\-)?[0-9\.]+)`)
-	match := handicap_re.FindStringSubmatch(one_raw_game)
+
 	var spread_int float64
 	var err error
-	if len(match) != 0 {
-		spread_str := match[1]
+	if strings.Contains(one_raw_game, "Handicap") {
+		var spread_str string
+		handicap_re := regexp.MustCompile(`Handicap ((\+|\-)[0-9\.]+)`)
+		match := handicap_re.FindStringSubmatch(one_raw_game)
+		if len(match) != 0 {
+			spread_str = match[1]
+		} else {
+			handicap_re2 := regexp.MustCompile(`\(((\+|\-)[0-9\.]+)\)`)
+			match2 := handicap_re2.FindStringSubmatch(one_raw_game)
+			spread_str = match2[1]
+		}
 		fmt.Println(" spread", spread_str)
 		spread_int, err = strconv.ParseFloat(spread_str, 64)
 		if err != nil {
