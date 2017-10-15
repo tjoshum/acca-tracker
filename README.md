@@ -22,8 +22,16 @@ Change to the directory where acca-tracker was installed, and run the deploy scr
 From deployment, the game daemon starts running, updating the database every 30 seconds with the latest results.
 You may wish to stop it, with `docker stop deploy_gamed_1` to avoid spamming nfl.com.
 
-## Manually adding a bet
-After deployment:
+## Adding a bet
+On a successfully deployed system:
+
+### From SkyBet
+```
+cd $GOPATH/src/github.com/tjoshum/acca-tracker
+go run .bet_getter/skybet/sky_parser/main.go
+```
+
+### Manually
 ```
 cd $GOPATH/src/github.com/tjoshum/acca-tracker
 go run ./bet_getter/manual/main.go
