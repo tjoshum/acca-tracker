@@ -143,17 +143,24 @@ func getRowColour(rownum int) string {
 	}
 }
 
-// For sorting
-type bob []database.Game
+// Boilerplate, for sorting
+type sortableGameArray []database.Game
 
-func (s bob) Len() int {
+func (s sortableGameArray) Len() int {
 	return len(s)
 }
-func (s bob) Swap(i, j int) {
+func (s sortableGameArray) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
 }
-func (s bob) Less(i, j int) bool {
-	return s[j].HomeTeam < s[i].HomeTeam
+func (s sortableGameArray) Less(i, j int) bool {
+	// We want to sort chronologically.
+	if s[i].Final != s[j].Final {
+		return s[i].Final
+	}
+	if s[i].Active != s[j].Active {
+		return s[i].Active
+	}
+	return s[i].HomeTeam < s[j].HomeTeam
 }
 
 func weekViewHandler(w http.ResponseWriter, r *http.Request) {
@@ -171,7 +178,7 @@ func weekViewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	renderTemplate(w, "head", d)
 
-	var users []Username // De-duplicated list of users who have placed bets this week.
+	var users []string // De-duplicated list of users who have placed bets this week.
 	workspace := make(map[Username]struct{})
 	for _, ubmap := range localTable {
 		for user, _ := range ubmap {
@@ -180,26 +187,27 @@ func weekViewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	for user, _ := range workspace {
 		fmt.Println("DEBUG Adding user to ordered list", user)
-		users = append(users, user)
+		users = append(users, string(user))
 	}
+	sort.Strings(users)
 	renderTemplate(w, "table_headings", users)
 
-	array := make([]database.Game, len(localTable))
+	game_array := make([]database.Game, len(localTable))
 	i := 0
 	for game, _ := range localTable {
-		array[i] = game
+		game_array[i] = game
 		i++
 	}
-	sort.Sort(bob(array))
+	sort.Sort(sortableGameArray(game_array))
 
 	rownum := 0
-	for _, game := range array {
+	for _, game := range game_array {
 		userToBetMap := localTable[game]
 		fmt.Println("DEBUG LogAGame", game)
 		var bets []displayBets
 
 		for _, user := range users {
-			bet, present := userToBetMap[user]
+			bet, present := userToBetMap[Username(user)]
 			if present {
 				fmt.Println("DEBUG LogBet Present", user)
 				bets = append(bets, bet)

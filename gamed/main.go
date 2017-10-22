@@ -52,6 +52,14 @@ func (g nflGame) GetAwayTeam() database.TeamCode {
 	return names.GetTeamCode(g[4])
 }
 
+func (g nflGame) GetActive() bool {
+	return ((g[2] != "Pregame") && (g[2] != "Final"))
+}
+
+func (g nflGame) GetFinal() bool {
+	return g[2] == "Final"
+}
+
 func (g nflGame) GetHomeScore() int32 {
 	score := g[7]
 	if score == "" {
@@ -110,8 +118,8 @@ func parseJson(jsonStr string) (error, []database.UpdateGameRequest) {
 			AwayTeam:  g.GetAwayTeam(),
 			HomeScore: g.GetHomeScore(),
 			AwayScore: g.GetAwayScore(),
-			Active:    true,
-			Final:     true,
+			Active:    g.GetActive(),
+			Final:     g.GetFinal(),
 		})
 	}
 	return nil, games
