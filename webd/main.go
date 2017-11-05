@@ -22,7 +22,7 @@ type HeaderData struct {
 type RowData struct {
 	Game        database.Game
 	RowColour   string
-	Predictions []utils.DisplayBets
+	Predictions []utils.BetStatus
 }
 
 func renderTemplate(w http.ResponseWriter, tmpl string, d interface{}) {
@@ -105,7 +105,7 @@ func weekViewHandler(w http.ResponseWriter, r *http.Request) {
 	for _, game := range game_array {
 		userToBetMap := localTable[game]
 		fmt.Println("DEBUG LogAGame", game)
-		var bets []utils.DisplayBets
+		var bets []utils.BetStatus
 
 		for _, user := range users {
 			bet, present := userToBetMap[utils.Username(user)]
@@ -114,7 +114,7 @@ func weekViewHandler(w http.ResponseWriter, r *http.Request) {
 				bets = append(bets, bet)
 			} else {
 				fmt.Println("DEBUG LogBet NotPresent", user)
-				bets = append(bets, utils.DisplayBets{"", "notstarted"})
+				bets = append(bets, utils.BetStatus{"", "notstarted"})
 			}
 		}
 

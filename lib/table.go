@@ -11,17 +11,16 @@ import (
 	"github.com/tjoshum/acca-tracker/lib/names"
 )
 
-// TODO Change to something more useful
-type DisplayBets struct {
-	DisplayString string
-	Class         string
-}
-
 // Type safety, to stop me from getting mixed up.
 type Username string
-type BetsOnAGame map[Username]DisplayBets
+type BetStatus struct {
+	BetOnAndSpread string
+	GameStatus     string
+}
+type BetsOnAGame map[Username]BetStatus
 type MyTable map[database.Game]BetsOnAGame // games -> {users -> bets}
 
+// Fetch the map of user ID's to usernames
 type UserMap map[int32]Username
 
 func getUserMapping(cl database.DatabaseServiceClient, ctx context.Context) UserMap {
@@ -57,7 +56,8 @@ func getBetsOnGame(cl database.DatabaseServiceClient, ctx context.Context, gameI
 	return rsp.GetBets()
 }
 
-func getClassString(game database.Game, bet *database.GetBetsOnGameResponse_Bet) string {
+// Determine whether a bet is winning, losing or not started.
+func getGameStatus(game database.Game, bet *database.GetBetsOnGameResponse_Bet) string {
 	if game.GetActive() {
 		if bet.GetBetOn() == game.GetHomeTeam() {
 			if (game.HomeScore + bet.Spread) > game.AwayScore {
@@ -77,8 +77,8 @@ func getClassString(game database.Game, bet *database.GetBetsOnGameResponse_Bet)
 	}
 }
 
+// External interface. Create a table of the games and bets for a given week.
 func CreateTable(week int32) MyTable {
-	// TODO Share between requests.
 	cl := database.NewDatabaseServiceClient(names.DatabaseSvc, client.DefaultClient)
 	ctx := metadata.NewContext(context.Background(), map[string]string{
 		"X-User-Id": "noone1235",
@@ -100,7 +100,7 @@ func CreateTable(week int32) MyTable {
 			user_str := userMap[bet.GetUserId()]
 			fmt.Println("DEBUG webd Pushing ", game, "user:", user_str, "bet:", bet.GetBetOn(), bet.GetSpread())
 			displayString := fmt.Sprintf("%s (%d)", bet.BetOn, bet.Spread)
-			display_table[game][user_str] = DisplayBets{displayString, getClassString(game, bet)}
+			display_table[game][user_str] = BetStatus{displayString, getGameStatus(game, bet)}
 		}
 	}
 
