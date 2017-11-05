@@ -9,7 +9,7 @@ import (
 
 	"github.com/micro/go-micro/cmd"
 	"github.com/tjoshum/acca-tracker/database/proto"
-	"github.com/tjoshum/acca-tracker/lib"
+	"github.com/tjoshum/acca-tracker/lib/table"
 )
 
 // Data to be passed in to the header html template
@@ -22,7 +22,7 @@ type HeaderData struct {
 type RowData struct {
 	Game        database.Game
 	RowColour   string
-	Predictions []utils.BetStatus
+	Predictions []table.BetStatus
 }
 
 func renderTemplate(w http.ResponseWriter, tmpl string, d interface{}) {
@@ -71,7 +71,7 @@ func weekViewHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Failed to find week"))
 		return
 	}
-	localTable := utils.CreateTable(int32(week))
+	localTable := table.CreateTable(int32(week))
 
 	d := &HeaderData{
 		Title: "NFL Betting Results",
@@ -80,7 +80,7 @@ func weekViewHandler(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "head", d)
 
 	var users []string // De-duplicated list of users who have placed bets this week.
-	workspace := make(map[utils.Username]struct{})
+	workspace := make(map[table.Username]struct{})
 	for _, ubmap := range localTable {
 		for user, _ := range ubmap {
 			workspace[user] = struct{}{}
@@ -105,16 +105,16 @@ func weekViewHandler(w http.ResponseWriter, r *http.Request) {
 	for _, game := range game_array {
 		userToBetMap := localTable[game]
 		fmt.Println("DEBUG LogAGame", game)
-		var bets []utils.BetStatus
+		var bets []table.BetStatus
 
 		for _, user := range users {
-			bet, present := userToBetMap[utils.Username(user)]
+			bet, present := userToBetMap[table.Username(user)]
 			if present {
 				fmt.Println("DEBUG LogBet Present", user)
 				bets = append(bets, bet)
 			} else {
 				fmt.Println("DEBUG LogBet NotPresent", user)
-				bets = append(bets, utils.BetStatus{"", "notstarted"})
+				bets = append(bets, table.BetStatus{"", "notstarted"})
 			}
 		}
 

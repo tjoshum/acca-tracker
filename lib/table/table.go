@@ -1,4 +1,4 @@
-package utils
+package table
 
 import (
 	"context"
@@ -14,6 +14,7 @@ import (
 // Type safety, to stop me from getting mixed up.
 type Username string
 type BetStatus struct {
+	// Changes to these field names necessitate changes in the html templates.
 	BetOnAndSpread string
 	GameStatus     string
 }

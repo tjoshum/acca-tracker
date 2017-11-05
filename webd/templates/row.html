@@ -6,6 +6,6 @@
     <td class="awayteam">{{ .Game.AwayTeam }}</td>
     <td>&nbsp</td>
     {{range .Predictions}}
-    <td class="{{.Class}}">&nbsp{{.DisplayString}}&nbsp</td>
+    <td class="{{.GameStatus}}">&nbsp{{.BetOnAndSpread}}&nbsp</td>
     <td></td>{{end}}
 </tr>
