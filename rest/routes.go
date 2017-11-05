@@ -35,4 +35,10 @@ var routes = Routes{
 		"Index",
 		Index,
 	},
+	Route{
+		"GET",
+		"/week/{weekNumber}",
+		"getWeekBets",
+		WeekNumber,
+	},
 }
