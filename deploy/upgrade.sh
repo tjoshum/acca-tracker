@@ -15,6 +15,7 @@ git pull
 source env.sh
 bounce_service gamed&
 bounce_service webd&
+bounce_service rest&
 
 # Wait for the long running jobs to finish
 for job in `jobs -p`; do

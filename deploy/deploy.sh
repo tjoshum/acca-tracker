@@ -31,6 +31,7 @@ echo "Building containers..."
 docker-compose build database&
 docker-compose build webd&
 docker-compose build gamed&
+docker-compose build rest&
 docker-compose build skybet& # Just to get this into the cache, so that adding bets is quicker.
 
 # Wait for the long running jobs to finish
@@ -42,6 +43,7 @@ docker-compose up -d database
 sleep 10
 docker-compose up -d webd
 docker-compose up -d gamed
+docker-compose up -d rest
 
 if [[ $1 == "test" ]]; then
   # Quick and dirty hack. Test within the database container, so I can connect to it in travis.

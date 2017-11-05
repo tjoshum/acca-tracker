@@ -28,6 +28,17 @@ services:
     environment:
       - GOPATH=/opt/dev/go
       - REGISTRY_ADDRESS=$DOCKER_ADDRESS
+  rest:
+    build:
+      context: $GOPATH/src/github.com/tjoshum/acca-tracker/rest
+    network_mode: "bridge"
+    ports:
+      - "${REST_PORT}:${REST_PORT}"
+    volumes:
+      - $GOPATH:/opt/dev/go # Just to allow us to quickly develop for now.
+    environment:
+      - GOPATH=/opt/dev/go
+      - REST_PORT=$REST_PORT
   webd:
     build:
       context: $GOPATH/src/github.com/tjoshum/acca-tracker/webd
