@@ -7,7 +7,7 @@ services:
         - "8500:8500"
         - "8400:8400"
         - "${DOCKER_ADDRESS}:53:8600/udp"
-    command: ["agent","-bootstrap","-server","-client","0.0.0.0"]
+    command: ["agent","-bootstrap","-server","-ui","-client","0.0.0.0"]
   database:
     build:
       context: $GOPATH/src/github.com/tjoshum/acca-tracker/database

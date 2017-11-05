@@ -4,13 +4,19 @@ set -x
 
 cd $(dirname "${BASH_SOURCE[0]}")
 
+function bounce_service {
+  local service=$1
+  docker stop deploy_${service}_1
+  docker rm deploy_${service}_1
+  docker-compose up -d --build $service
+}
+
 git pull
-
-docker stop deploy_gamed_1
-docker stop deploy_webd_1
-docker rm deploy_gamed_1
-docker rm deploy_webd_1
-
 source env.sh
-docker-compose up -d --build webd
-docker-compose up -d --build gamed
+bounce_service gamed&
+bounce_service webd&
+
+# Wait for the long running jobs to finish
+for job in `jobs -p`; do
+    wait $job
+done
