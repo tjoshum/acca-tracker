@@ -15,5 +15,4 @@ RUN ["/bin/bash", "-c", "debconf-set-selections <<< 'mysql-server mysql-server/r
 # Install go MySQL driver
 RUN go get github.com/go-sql-driver/mysql
 
-#CMD service mysql start; while true; do sleep 600; done
 CMD $GOPATH/src/github.com/tjoshum/acca-tracker/database/run.sh

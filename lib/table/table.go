@@ -59,7 +59,7 @@ func getBetsOnGame(cl database.DatabaseServiceClient, ctx context.Context, gameI
 
 // Determine whether a bet is winning, losing or not started.
 func getGameStatus(game database.Game, bet *database.GetBetsOnGameResponse_Bet) string {
-	if game.GetActive() {
+	if game.GetActive() || game.GetFinal() {
 		if bet.GetBetOn() == game.GetHomeTeam() {
 			if (game.HomeScore + bet.Spread) > game.AwayScore {
 				return "winning"
