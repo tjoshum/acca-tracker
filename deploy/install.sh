@@ -29,7 +29,7 @@ docker-compose -v
 # Install a modern version of go
 wget --quiet https://storage.googleapis.com/golang/go1.10.3.linux-amd64.tar.gz
 tar -C /usr/local -xzf go1.10.3.linux-amd64.tar.gz
-rm go1.8.1.linux-amd64.tar.gz
+rm go1.10.3.linux-amd64.tar.gz
 ln /usr/local/go/bin/go /usr/bin/go
 
 # Get the acca-tracker
