@@ -134,7 +134,7 @@ func getJson(url string) (error, []database.UpdateGameRequest) {
 
 // Fetches the games for this week and sends them to the database.
 func updateCurrentGames() {
-	_, games := getJson("http://www.nfl.com/liveupdate/scores/scores.json")
+	_, games := getJson("http://www.nfl.com/liveupdate/scores/scores.json?season=2018&seasonType=REG&week=2")
 	for _, g := range games {
 		sendToDatabase(g)
 	}
