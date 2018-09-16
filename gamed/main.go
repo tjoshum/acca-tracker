@@ -5,15 +5,16 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"regexp"
-	"strconv"
+//    "os"
+//    "regexp"
+//	"strconv"
 	"strings"
 	"time"
 
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/cmd"
 	"github.com/micro/go-micro/metadata"
-	"github.com/prometheus/common/log"
+//	"github.com/prometheus/common/log"
 	"github.com/tjoshum/acca-tracker/database/proto"
 	"github.com/tjoshum/acca-tracker/lib/names"
 	"golang.org/x/net/context"
@@ -38,67 +39,58 @@ func sendToDatabase(game database.UpdateGameRequest) {
 	}
 }
 
-type nflRawStruct struct {
-	SS [][]string `json:"ss"`
+type nflGame struct {
+	Home aTeam `json:"home"`
+	Away aTeam `json:"away"`
 }
 
-type nflGame []string
+type nflRawStruct map[string]*nflGame
+
+type aTeam struct {
+        Score struct {
+            Num1 int `json:"1"`
+            Num2 int `json:"2"`
+            Num3 int `json:"3"`
+            Num4 int `json:"4"`
+            Num5 int `json:"5"`
+            T    int `json:"T"`
+        } `json:"score"`
+        Abbr string `json:"abbr"`
+        To   int    `json:"to"`
+}
 
 func (g nflGame) GetHomeTeam() database.TeamCode {
-	return names.GetTeamCode(g[6])
+	return names.GetTeamCode(g.Home.Abbr)
 }
 
 func (g nflGame) GetAwayTeam() database.TeamCode {
-	return names.GetTeamCode(g[4])
+	return names.GetTeamCode(g.Away.Abbr)
 }
 
 func (g nflGame) GetActive() bool {
-	return ((g[2] != "Pregame") && (g[2] != "Final"))
+    return true
+//	return ((g[2] != "Pregame") && (g[2] != "Final"))
 }
 
 func (g nflGame) GetFinal() bool {
-	return g[2] == "Final"
+    return false
+//    return g[2] == "Final"
 }
 
 func (g nflGame) GetHomeScore() int32 {
-	score := g[7]
-	if score == "" {
-		return 0
-	}
-	i, err := strconv.Atoi(score)
-	if err != nil {
-		log.Fatalf("Failed to translate home score '%s'", score)
-		return -1
-	}
-	return int32(i)
+    return int32(g.Home.To)
 }
 
 func (g nflGame) GetAwayScore() int32 {
-	score := g[5]
-	if score == "" {
-		return 0
-	}
-	i, err := strconv.Atoi(score)
-	if err != nil {
-		log.Fatalf("Failed to translate away score '%s'", score)
-		return -1
-	}
-	return int32(i)
+	return int32(g.Away.To)
 }
 
 func (g nflGame) GetWeek() int32 {
-	re := regexp.MustCompile("^[A-Z]+([0-9]+)$")
-	week := re.FindStringSubmatch(g[12])[1]
-	i, err := strconv.Atoi(week)
-	if err != nil {
-		log.Fatalf("Failed to translate week '%s'", g[12])
-		return 0
-	}
-	return int32(i)
+    return int32(2)
 }
 
 func parseJson(jsonStr string) (error, []database.UpdateGameRequest) {
-	fmt.Println("Retreived json:", jsonStr)
+//	fmt.Println("Retreived json:", jsonStr)
 	str := strings.Replace(jsonStr, ",,", ",\"\",", -1)
 	str = strings.Replace(str, ",,", ",\"\",", -1)
 
@@ -110,12 +102,11 @@ func parseJson(jsonStr string) (error, []database.UpdateGameRequest) {
 	}
 
 	var games []database.UpdateGameRequest
-	for _, strs := range n.SS {
-		g := nflGame(strs)
+	for _, g := range n {
 		games = append(games, database.UpdateGameRequest{
 			Week:      g.GetWeek(),
 			HomeTeam:  g.GetHomeTeam(),
-			AwayTeam:  g.GetAwayTeam(),
+            AwayTeam:  g.GetAwayTeam(),
 			HomeScore: g.GetHomeScore(),
 			AwayScore: g.GetAwayScore(),
 			Active:    g.GetActive(),
@@ -143,7 +134,7 @@ func getJson(url string) (error, []database.UpdateGameRequest) {
 
 // Fetches the games for this week and sends them to the database.
 func updateCurrentGames() {
-	_, games := getJson("http://www.nfl.com/liveupdate/scorestrip/scorestrip.json")
+	_, games := getJson("http://www.nfl.com/liveupdate/scores/scores.json")
 	for _, g := range games {
 		sendToDatabase(g)
 	}
