@@ -40,7 +40,7 @@ for job in `jobs -p`; do
 done
 
 docker-compose up -d database
-sleep 10
+sleep 100
 docker-compose up -d webd
 docker-compose up -d gamed
 docker-compose up -d rest

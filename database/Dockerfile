@@ -1,6 +1,6 @@
 FROM ubuntu:16.04
 
-RUN apt-get update && apt-get install -y wget git net-tools
+RUN apt-get update && apt-get install -y wget git net-tools gcc
 
 # Install modern go.
 RUN wget --quiet https://storage.googleapis.com/golang/go1.13.1.linux-amd64.tar.gz && \

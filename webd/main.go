@@ -26,7 +26,7 @@ type RowData struct {
 }
 
 func renderTemplate(w http.ResponseWriter, tmpl string, d interface{}) {
-	t, err := template.ParseFiles("templates/" + tmpl + ".html")
+	t, err := template.ParseFiles("webd/templates/" + tmpl + ".html")
 	if err != nil {
 		fmt.Println("Error renderTemplate ParseFiles: ", err.Error())
 	}
