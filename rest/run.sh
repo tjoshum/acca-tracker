@@ -3,4 +3,4 @@
 set -x
 
 cd $GOPATH/src/github.com/tjoshum/acca-tracker
-go run rest/main.go
+go run rest/*.go
