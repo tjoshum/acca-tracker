@@ -2,6 +2,5 @@
 
 set -x
 
-cd $GOPATH/src/github.com/tjoshum/acca-tracker/rest
-go get ./...
-go run *.go
+cd $GOPATH/src/github.com/tjoshum/acca-tracker
+go run rest/main.go

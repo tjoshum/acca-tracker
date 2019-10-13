@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/micro/go-micro/cmd"
+	"github.com/micro/go-micro/config/cmd"
 	"github.com/tjoshum/acca-tracker/database/proto"
 	"github.com/tjoshum/acca-tracker/lib/table"
 )

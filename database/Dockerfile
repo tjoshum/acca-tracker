@@ -3,8 +3,8 @@ FROM ubuntu:16.04
 RUN apt-get update && apt-get install -y wget git net-tools
 
 # Install modern go.
-RUN wget --quiet https://storage.googleapis.com/golang/go1.10.3.linux-amd64.tar.gz && \
-    tar -C /usr/local -xzfgo1.10.3.linux-amd64.tar.gz && \
+RUN wget --quiet https://storage.googleapis.com/golang/go1.13.1.linux-amd64.tar.gz && \
+    tar -C /usr/local -xzfgo1.13.1.linux-amd64.tar.gz && \
     ln /usr/local/go/bin/go /usr/bin/go
 
 # Install and setup MySQL
